@@ -2,7 +2,7 @@ from web3 import Web3
 import json
 
 NETWORK = "http://localhost:7545"  # Ou o endereço correto se for diferente
-ENDERECO = "0x72025D751fbAa860618bbe1ad8293B28334340C5"
+ENDERECO = "0x8922BDF86F907285E4bb8d58D48DD56b65C5dEc2"
 
 def connect_to_network():
     web3 = Web3(Web3.HTTPProvider(NETWORK))
@@ -23,7 +23,7 @@ def criar_nova_aposta(descricao,conta):
     web3 = connect_to_network()
     conta = conta
 
-    contrato = load_contract(web3, ENDERECO, "fabrica.json")
+    contrato = load_contract(web3, ENDERECO, "evento.json")
 
     tx_hash = contrato.functions.criarNovaAposta(descricao).transact({'from': conta})
 
@@ -33,111 +33,132 @@ def criar_nova_aposta(descricao,conta):
     tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
     print("Transação confirmada!")
 
-    
-    # tx = contrato.functions.criarNovaAposta(descricao).build_transaction({
-    #     "from": conta.address,
-    #     "nonce": web3.eth.get_transaction_count(conta.address),
-    #     "gas": 2000000,
-    #     "gasPrice": web3.to_wei('20', 'gwei')
-    # })
+    # Escutar o evento
+    event_filter = contrato.events.NovaApostaCriada.create_filter(from_block=tx_receipt['blockNumber'])
+    eventos = event_filter.get_all_entries()
 
-    # signed_tx = web3.eth.account.sign_transaction(tx, conta.key)
-    # tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+    for evento in eventos:
+        print(f"Aposta criada por: {evento.args['criador']}")
+        print(f"Índice da aposta: {evento.args['apostaIndex']}")
+        print(f"Descrição: {evento.args['descricao']}")
 
-    # print(f"Transação enviada! Hash: {tx_hash.hex()}")
-    # receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-    # print(f"Transação confirmada! {receipt}")
-
-
-def listar_apostas():
-    web3 = connect_to_network()
-    contrato = load_contract(web3, ENDERECO, "fabrica.json")
-
-    apostas = contrato.functions.listarApostas().call()
-    print("Apostas Criadas:", apostas)
-    return apostas
-
+  
 
 def criando_bet():
     
-    apostas_enderecos = listar_apostas()
     
-    if len(apostas_enderecos) > 0:
-        print(apostas_enderecos)
-        while True:
-            x=input('selecione a aposta')
-            if x in apostas_enderecos:
-                break
-
-
-        web3 = connect_to_network()
-        
-        aposta = load_contract(web3, x, "aposta.json")
-
+    web3 = connect_to_network()
     
-        valor_aposta_ether = float(input("valor"))
-        #valor para Wei
-        valor_aposta_wei = web3.to_wei(valor_aposta_ether, 'ether')
+    aposta = load_contract(web3,ENDERECO, "evento.json")
 
-        conta = input("endereço")
-        tx_hash = aposta.functions.apostar("0 - 0").transact({
-        'from': conta,
-        'value': valor_aposta_wei  
-        })
-        print(f"hash!: {tx_hash}")
+    valor_aposta_ether = float(input("valor"))
 
+    valor_aposta_wei = web3.to_wei(valor_aposta_ether, 'ether')
+
+    conta = input("conta")
+    index = int(input("evento né"))
+    tx_hash = aposta.functions.apostar(index,"1 - 3").transact({
+    'from': conta,
+    'value': valor_aposta_wei  
+    })
+    print(f"hash!: {tx_hash}")
+
+   
+
+
+
+
+def listar_apostas(param):
+    #Filtrar eventos (Exemplo para NovaApostaCriada)
+
+    web3 = connect_to_network()
+    
+    aposta = load_contract(web3,ENDERECO, "evento.json")
+
+    event_filter = aposta.events.NovaApostaCriada.create_filter(from_block=0)
+
+    # Buscar eventos
+    eventos = event_filter.get_all_entries()
+
+
+    if param ==1:
+    # Processar os eventos
+        for evento in eventos:
+            criador = evento['args']['criador']
+            descricao = evento['args']['descricao']
+            index = evento['args']['apostaIndex']
+            print(f"Aposta criada por: {criador}")
+            print(f"Descrição: {descricao}")
+            print(f"Index: {index}")
     else:
-        print("Nenhuma aposta criada ainda.")
-
-
-
-
-
-
+        lista = []
+        for evento in eventos:
+            dic={}
+            dic['criador']=evento['args']['criador']
+            dic['descricao']=evento['args']['descricao']
+            dic['index']=evento['args']['index']
+            lista.append(dic)
+        return lista,web3,aposta
 
 
 def resultado():
     
-    apostas_enderecos = listar_apostas()
     
-    if len(apostas_enderecos) > 0:
-        print(apostas_enderecos)
-        while True:
-            x=input('selecione a aposta')
-            if x in apostas_enderecos:
-                break
-
 
         web3 = connect_to_network()
-        
-        aposta = load_contract(web3, x, "aposta.json")
-
     
+        aposta = load_contract(web3,ENDERECO, "evento.json")
+
+
         
-        resultado_vencedor = "3 - 0"  
+        resultado_vencedor = "1 - 0"  
         from_account = web3.eth.accounts[0]  #conta 0 ganache
 
+        index = int(input("digite qual aposta é"))
         
-        
-        tx_hash = aposta.functions.resultado(resultado_vencedor).transact({'from': from_account})
+        tx_hash = aposta.functions.resultado(index,resultado_vencedor).transact({'from': from_account})
 
         print(f"Transação enviada com sucesso! Hash da transação: {tx_hash.hex()}")
 
         tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
 
-    else:
-        print("Nenhuma aposta criada ainda.")
+
+
+        event_filter = aposta.events.Resultado.create_filter(from_block=0)
+        eventos = event_filter.get_all_entries()
+
+        for evento in eventos:
+            print(f"Aposta vencida por: {evento.args['vencedores']}")
+            print(f"Índice da aposta: {evento.args['apostaIndex']}")
+            print(f"Descrição: {evento.args['descricao']}")
+            print(f"Resultado: {evento.args['resultado']}")
 
 
 
 
 
 
+def historico():
+    web3 = connect_to_network()
+    
+    aposta = load_contract(web3,ENDERECO, "evento.json")
+
+    event_filter = aposta.events.Resultado.create_filter(from_block=0)
+    eventos = event_filter.get_all_entries()
+
+    for evento in eventos:
+        print(f"Aposta vencida por: {evento.args['vencedores']}")
+        print(f"Índice da aposta: {evento.args['apostaIndex']}")
+        print(f"Descrição: {evento.args['descricao']}")
+        print(f"Resultado: {evento.args['resultado']}")
 
 
 
-
-
+def calcular_odds_dinamicas(apostaIndex, tipoResultado):
+    web3 = connect_to_network()
+    aposta = load_contract(web3, ENDERECO, "evento.json")
+    odds = aposta.functions.calcularOddsDinamicas(apostaIndex, tipoResultado).call()
+    print(f"Odds para o resultado '{tipoResultado}': {odds}")
 
 
 
@@ -153,8 +174,10 @@ if __name__ == "__main__":
         conta=input("conta").strip()
         criar_nova_aposta(descricao,conta)
     elif escolha == "2":
-        listar_apostas()
+        listar_apostas(1)
     elif escolha=="3":
         criando_bet()
-    else:
+    elif escolha=='4':
         resultado()
+    else:
+        historico()

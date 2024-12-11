@@ -21,8 +21,10 @@ contract Aposta {
         uint256 valor;
     }
 
+    
+
     //evento para registrar o resultado
-    event Resultado(uint amount, uint when);
+    event Resultado(string descric, string result);
 
     constructor(address criador, string memory _descricao, uint _unlockTime) {
         require(
@@ -72,12 +74,14 @@ contract Aposta {
     }
 
 
+
+
     //finalizar a aposta e distribuir prêmio
     function resultado(string memory resultadoVencedor) public {
 
         require(block.timestamp >= unlockTime, "Aposta ainda nao terminou");
         
-        emit Resultado(address(this).balance, block.timestamp);
+        emit Resultado(descricao, resultadoVencedor);
 
         distribuirPremios(resultadoVencedor, address(this).balance);
     }

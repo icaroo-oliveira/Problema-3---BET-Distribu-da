@@ -4,7 +4,7 @@ import sys
 
 # Configurações
 NETWORK = "http://localhost:7545"  # Endereço da rede (Ganache no caso)
-ENDERECO = "0x989D6716A527305902Ad320Da8C992Ae8649a0ed"  # Endereço do contrato
+ENDERECO = "0x10C8de61DD3acF40D8aBBe96F09a82A854250341"  # Endereço do contrato
 
 # Função para conectar à rede
 def connect_to_network():

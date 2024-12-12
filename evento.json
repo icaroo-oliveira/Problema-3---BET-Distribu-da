@@ -167,6 +167,11 @@
         "internalType": "uint256",
         "name": "totalApostadoGeral",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "apostaFechada",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -178,11 +183,6 @@
         "internalType": "uint256",
         "name": "apostaIndex",
         "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "resultadoVencedor",
-        "type": "string"
       }
     ],
     "name": "resultado",

@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.2 <0.9.0;
 
+
+
+
+
+
 contract evento {
+
+
+
     struct ApostaInfo {
         string tipoAposta;
         uint256 valor;
@@ -15,7 +23,8 @@ contract evento {
     mapping(string => uint256) tipoAposta;   
     mapping(string => address[]) tipoParaApostadores; // Apostadores por tipo de aposta
     uint256 totalApostadoGeral;              // Valor total apostado na aposta
-}
+    bool apostaFechada;
+    }
 
 
     Aposta[] public listaDeApostas;
@@ -24,18 +33,26 @@ contract evento {
     event Resultado(uint apostaIndex, string resultado,address[] vencedores,string descricao);
 
 
+
+  
+
+
     //novo unloctime
-    function criarNovaAposta(string memory descricao, uint _unlockTime) public {
+    function criarNovaAposta(string memory descricao) public {
+
+        uint unlockTime = block.timestamp + 5 minutes; // 5 minutos no futuro (teste)
+
         require(
-            block.timestamp < _unlockTime, //novo
+            block.timestamp < unlockTime, //novo
             "Unlock time should be in the future"
         );
 
-        uint unlockTime = block.timestamp + 5 minutes; // 5 minutos no futuro (teste)
+        
         Aposta storage novaAposta = listaDeApostas.push();
         novaAposta.descricao = descricao;
         novaAposta.dono = msg.sender;
         novaAposta.unlockTime = unlockTime;
+        novaAposta.apostaFechada=false;
 
         uint apostaIndex = listaDeApostas.length - 1; // Índice da nova aposta
         emit NovaApostaCriada(msg.sender, apostaIndex, descricao); // Emitindo o índice
@@ -45,10 +62,12 @@ contract evento {
 
     function apostar(uint apostaIndex, string memory tipoResultado) public payable {
 
+
          
         require(apostaIndex < listaDeApostas.length, "Aposta nao encontrada");
         Aposta storage aposta = listaDeApostas[apostaIndex];
 
+        require(!aposta.apostaFechada, "Aposta ja fechada");
 
         require(
             block.timestamp < aposta.unlockTime, //novo
@@ -84,13 +103,22 @@ contract evento {
         return odds;
     }
 
-    function resultado(uint apostaIndex, string memory resultadoVencedor) public {
+    function resultado(uint apostaIndex) public {
         require(apostaIndex < listaDeApostas.length, "Aposta nao encontrada");
         Aposta storage aposta = listaDeApostas[apostaIndex];
 
+        require(!aposta.apostaFechada, "Aposta ja fechada");
+
+
         require(block.timestamp >= aposta.unlockTime, "Aposta ainda nao terminou");
 
-        distribuirPremios(apostaIndex,aposta, resultadoVencedor, address(this).balance);
+
+        string memory resultado_final = gerarResultado(apostaIndex);
+        
+
+        distribuirPremios(apostaIndex,aposta, resultado_final, address(this).balance);
+        aposta.apostaFechada=true;
+
 
     }
 
@@ -112,6 +140,27 @@ contract evento {
         emit Resultado(apostaIndex,resultadoVencedor,vencedores,aposta.descricao);
 
     }
+
+
+
+        function gerarResultado(uint apostaIndex) internal view     returns (string memory) {
+            Aposta storage aposta = listaDeApostas[apostaIndex];
+            require(!aposta.apostaFechada, "Resultado ja publicado");
+
+            // Gera um número pseudo-aleatório usando o hash do bloco
+            uint resultadoRandomico = uint(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, apostaIndex))) % 2;
+
+            string memory valor = resultadoRandomico == 0 ? "cara" : "coroa";
+
+            return valor;
+        }
+
+
+
+
+
+
+
 
 
     function getApostas() public view returns (

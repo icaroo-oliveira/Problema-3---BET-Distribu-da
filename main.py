@@ -2,7 +2,7 @@ from web3 import Web3
 import json
 
 NETWORK = "http://localhost:7545"  # Ou o endereço correto se for diferente
-ENDERECO = "0x8922BDF86F907285E4bb8d58D48DD56b65C5dEc2"
+ENDERECO = "0x989D6716A527305902Ad320Da8C992Ae8649a0ed"
 
 def connect_to_network():
     web3 = Web3(Web3.HTTPProvider(NETWORK))
@@ -57,7 +57,8 @@ def criando_bet():
 
     conta = input("conta")
     index = int(input("evento né"))
-    tx_hash = aposta.functions.apostar(index,"1 - 3").transact({
+    tipo = input('cara ou coroa')
+    tx_hash = aposta.functions.apostar(index,tipo).transact({
     'from': conta,
     'value': valor_aposta_wei  
     })
@@ -80,7 +81,7 @@ def listar_apostas(param):
     # Buscar eventos
     eventos = event_filter.get_all_entries()
 
-
+    print(eventos)
     if param ==1:
     # Processar os eventos
         for evento in eventos:
@@ -111,12 +112,11 @@ def resultado():
 
 
         
-        resultado_vencedor = "1 - 0"  
         from_account = web3.eth.accounts[0]  #conta 0 ganache
 
         index = int(input("digite qual aposta é"))
         
-        tx_hash = aposta.functions.resultado(index,resultado_vencedor).transact({'from': from_account})
+        tx_hash = aposta.functions.resultado(index).transact({'from': from_account})
 
         print(f"Transação enviada com sucesso! Hash da transação: {tx_hash.hex()}")
 

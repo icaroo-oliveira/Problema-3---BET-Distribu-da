@@ -25,7 +25,7 @@ module.exports = {
   networks: {
     ganache: {
       url: "http://localhost:7545",
-      accounts: [process.env.PRIVATE_KEY_1, process.env.PRIVATE_KEY_2,process.env.PRIVATE_KEY_3,process.env.PRIVATE_KEY_4]
+      accounts: [process.env.PRIVATE_KEY_1, process.env.PRIVATE_KEY_2,process.env.PRIVATE_KEY_3]
     }
   }
 };

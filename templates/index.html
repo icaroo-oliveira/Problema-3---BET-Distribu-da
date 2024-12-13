@@ -56,6 +56,39 @@
     <ul id="apostas-lista"></ul>
 
 
+
+    <h1>Historico</h1>
+    <button onclick="fetchHistorico()">Listar Historico</button>
+    <ul id="apostas-historico"></ul>
+
+
+    <h2>Depositar</h2>
+    <form id="form-depositar">
+        <label for="depositar-conta">Conta:</label>
+        <input type="text" id="depositar-conta" name="depositar-conta" required><br><br>
+
+        <label for="depositar-valor">Valor:</label>
+        <input type="number" id="depositar-valor" name="depositar-valor" required><br><br>
+
+        <button type="submit">Depositar</button>
+    </form>
+
+    <!-- Formulário para saque -->
+    <h2>Sacar</h2>
+    <form id="form-sacar">
+        <label for="sacar-conta">Conta:</label>
+        <input type="text" id="sacar-conta" name="sacar-conta" required><br><br>
+
+        <label for="sacar-valor">Valor:</label>
+        <input type="number" id="sacar-valor" name="sacar-valor" required><br><br>
+
+        <button type="submit">Sacar</button>
+    </form>
+
+
+
+
+
     <script>
         // Adiciona eventos de envio para os formulários
         document.getElementById('form-criar-aposta').addEventListener('submit', async function(event) {
@@ -64,6 +97,43 @@
             const conta = document.getElementById('conta').value;
             await criarAposta(descricao, conta);
         });
+
+
+        document.getElementById('form-depositar').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const conta = document.getElementById('depositar-conta').value;
+            const valor = document.getElementById('depositar-valor').value;
+            await depositar(conta, valor);
+        });
+
+        document.getElementById('form-sacar').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const conta = document.getElementById('sacar-conta').value;
+            const valor = document.getElementById('sacar-valor').value;
+            await sacar(conta, valor);
+        });
+
+
+
+        async function depositar(conta, valor) {
+            const response = await fetch('http://localhost:5000/depositar', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ conta, valor })
+            });
+            const data = await response.json();
+            console.log(data);
+        }
+
+        async function sacar(conta, valor) {
+            const response = await fetch('http://localhost:5000/sacar', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ conta, valor })
+            });
+            const data = await response.json();
+            console.log(data);
+        }
 
 
 
@@ -197,6 +267,27 @@
                 apostas.forEach(aposta => {
                     const item = document.createElement('li');
                     item.textContent = `Criador: ${aposta.criador}, Descrição: ${aposta.descricao}, Índice: ${aposta.index}`;
+                    lista.appendChild(item);
+                });
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao buscar apostas!');
+            }
+        }
+
+        async function fetchHistorico() {
+            try {
+                const response = await fetch('/historico');
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar historico');
+                }
+                const apostas = await response.json();
+                const lista = document.getElementById('apostas-historico');
+                lista.innerHTML = ''; // Limpa a lista antes de adicionar os novos itens
+
+                apostas.forEach(aposta => {
+                    const item = document.createElement('li');
+                    item.textContent = `Criador: ${aposta.criador}, Descrição: ${aposta.descricao}, Índice: ${aposta.index}, Resultado: ${aposta.resultado}`;
                     lista.appendChild(item);
                 });
             } catch (error) {

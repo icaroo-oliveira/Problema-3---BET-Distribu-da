@@ -146,8 +146,11 @@ Qualquer pessoa consegue criar um Evento. Para criação do Evento existe um mé
 
 A estrutura do struct para os eventos é a seguinte:
 
-imagem.
-
+<p align="center">
+      <img src="/imagens/evento.png" width = "400" />
+    </p>
+    <p align="center"><strong> Figura 5. Struct do Evento </strong></p>
+    </strong></p>
 
 **Apostas**: 
 

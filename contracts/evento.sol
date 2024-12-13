@@ -10,6 +10,10 @@ contract evento {
 
 
 
+
+    mapping(address => uint256) public carteiras;
+
+
     struct ApostaInfo {
         string tipoAposta;
         uint256 valor;
@@ -33,14 +37,10 @@ contract evento {
     event Resultado(uint apostaIndex, string resultado,address[] vencedores,string descricao);
 
 
-
-  
-
-
     //novo unloctime
     function criarNovaAposta(string memory descricao) public {
 
-        uint unlockTime = block.timestamp + 5 minutes; // 5 minutos no futuro (teste)
+        uint unlockTime = block.timestamp + 3 minutes; // 5 minutos no futuro (teste)
 
         require(
             block.timestamp < unlockTime, //novo
@@ -60,33 +60,95 @@ contract evento {
 
 
 
-    function apostar(uint apostaIndex, string memory tipoResultado) public payable {
+    // function apostar(uint apostaIndex, string memory tipoResultado) public payable {
 
 
          
-        require(apostaIndex < listaDeApostas.length, "Aposta nao encontrada");
-        Aposta storage aposta = listaDeApostas[apostaIndex];
+    //     require(apostaIndex < listaDeApostas.length, "Aposta nao encontrada");
+    //     Aposta storage aposta = listaDeApostas[apostaIndex];
 
-        require(!aposta.apostaFechada, "Aposta ja fechada");
+    //     require(!aposta.apostaFechada, "Aposta ja fechada");
 
-        require(
-            block.timestamp < aposta.unlockTime, //novo
-            "Unlock time should be in the future"
-        );
+    //     require(
+    //         block.timestamp < aposta.unlockTime, //novo
+    //         "Unlock time should be in the future"
+    //     );
 
 
-        require(msg.value > 0, "Valor da aposta deve ser maior que zero");
-        require(bytes(aposta.apostas[msg.sender].tipoAposta).length == 0, "Ja realizou uma aposta");
+    //     require(msg.value > 0, "Valor da aposta deve ser maior que zero");
+    //     require(bytes(aposta.apostas[msg.sender].tipoAposta).length == 0, "Ja realizou uma aposta");
 
-        ApostaInfo memory novaApostaInfo = ApostaInfo({
-            tipoAposta: tipoResultado,
-            valor: msg.value
-        });
+    //     ApostaInfo memory novaApostaInfo = ApostaInfo({
+    //         tipoAposta: tipoResultado,
+    //         valor: msg.value
+    //     });
 
-        aposta.apostas[msg.sender] = novaApostaInfo;
-        aposta.tipoParaApostadores[tipoResultado].push(msg.sender);
-        atualizarApostas(aposta, tipoResultado, msg.value);
+    //     aposta.apostas[msg.sender] = novaApostaInfo;
+    //     aposta.tipoParaApostadores[tipoResultado].push(msg.sender);
+    //     atualizarApostas(aposta, tipoResultado, msg.value);
+    // }
+
+
+
+
+    function apostar(uint apostaIndex, string memory tipoResultado, uint256 valorAposta) public {
+    require(apostaIndex < listaDeApostas.length, "Aposta nao encontrada");
+    Aposta storage aposta = listaDeApostas[apostaIndex];
+
+    require(!aposta.apostaFechada, "Aposta ja fechada");
+    require(
+        block.timestamp < aposta.unlockTime,
+        "Unlock time should be in the future"
+    );
+
+    require(valorAposta > 0, "Valor da aposta deve ser maior que zero");
+    require(bytes(aposta.apostas[msg.sender].tipoAposta).length == 0, "Ja realizou uma aposta");
+
+    // Verifica se o usuário tem saldo suficiente na carteira
+    require(carteiras[msg.sender] >= valorAposta, "Saldo insuficiente na carteira");
+
+    // Deduz o valor da carteira do usuário
+    carteiras[msg.sender] -= valorAposta;
+
+    // Atualiza a estrutura da aposta
+    ApostaInfo memory novaApostaInfo = ApostaInfo({
+        tipoAposta: tipoResultado,
+        valor: valorAposta
+    });
+
+    aposta.apostas[msg.sender] = novaApostaInfo;
+    aposta.tipoParaApostadores[tipoResultado].push(msg.sender);
+
+    atualizarApostas(aposta, tipoResultado, valorAposta);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+    function depositar() public payable {
+        require(msg.value > 0, "O valor do deposito deve ser maior que zero");
+        carteiras[msg.sender] += msg.value;
+    }
+
+    // Função para sacar fundos
+    function sacar(uint256 valor) public {
+        require(carteiras[msg.sender] >= valor, "Saldo insuficiente");
+        carteiras[msg.sender] -= valor;
+        payable(msg.sender).transfer(valor);
+    }
+
+
+
+
+
 
     function atualizarApostas(Aposta storage aposta, string memory tipoResultado, uint256 valor) internal {
         aposta.tipoAposta[tipoResultado] += valor;
@@ -103,7 +165,12 @@ contract evento {
         return odds;
     }
 
+
+    event ResultadoChamado(uint apostaIndex, uint timestamp);
+
+
     function resultado(uint apostaIndex) public {
+        emit ResultadoChamado(apostaIndex, block.timestamp);
         require(apostaIndex < listaDeApostas.length, "Aposta nao encontrada");
         Aposta storage aposta = listaDeApostas[apostaIndex];
 
@@ -116,44 +183,72 @@ contract evento {
         string memory resultado_final = gerarResultado(apostaIndex);
         
 
-        distribuirPremios(apostaIndex,aposta, resultado_final, address(this).balance);
+        distribuirPremios(apostaIndex,aposta, resultado_final);
         aposta.apostaFechada=true;
 
 
     }
 
-    function distribuirPremios(uint apostaIndex,Aposta storage aposta, string memory resultadoVencedor, uint256 premioTotal) internal {
+    // function distribuirPremios(uint apostaIndex,Aposta storage aposta, string memory resultadoVencedor) internal {
+    //     address[] memory vencedores = aposta.tipoParaApostadores[resultadoVencedor];
+    //     uint256 totalVencedores = 0;
+
+
+
+
+    //     for (uint256 i = 0; i < vencedores.length; i++) {
+    //         totalVencedores += aposta.apostas[vencedores[i]].valor;
+    //     }
+
+    //     require(totalVencedores > 0, "Nao ha vencedores com apostas");
+
+    //     for (uint256 i = 0; i < vencedores.length; i++) {
+    //         uint256 premio = (aposta.apostas[vencedores[i]].valor * aposta.totalApostadoGeral) / totalVencedores;
+    //         payable(vencedores[i]).transfer(premio);
+    //     }
+
+    //     emit Resultado(apostaIndex,resultadoVencedor,vencedores,aposta.descricao);
+
+    // }
+
+
+    function distribuirPremios(uint apostaIndex, Aposta storage aposta, string memory resultadoVencedor) internal {
         address[] memory vencedores = aposta.tipoParaApostadores[resultadoVencedor];
         uint256 totalVencedores = 0;
 
+        // Calcula o total apostado pelos vencedores
         for (uint256 i = 0; i < vencedores.length; i++) {
             totalVencedores += aposta.apostas[vencedores[i]].valor;
         }
 
         require(totalVencedores > 0, "Nao ha vencedores com apostas");
 
+        // Distribui os prêmios para as carteiras dos vencedores
         for (uint256 i = 0; i < vencedores.length; i++) {
-            uint256 premio = (aposta.apostas[vencedores[i]].valor * premioTotal) / totalVencedores;
-            payable(vencedores[i]).transfer(premio);
+            uint256 premio = (aposta.apostas[vencedores[i]].valor * aposta.totalApostadoGeral) / totalVencedores;
+            carteiras[vencedores[i]] += premio; // Adiciona o prêmio ao saldo do vencedor
         }
 
-        emit Resultado(apostaIndex,resultadoVencedor,vencedores,aposta.descricao);
+        emit Resultado(apostaIndex, resultadoVencedor, vencedores, aposta.descricao);
+}
 
+
+
+
+
+
+
+    function gerarResultado(uint apostaIndex) internal view     returns (string memory) {
+        Aposta storage aposta = listaDeApostas[apostaIndex];
+        require(!aposta.apostaFechada, "Resultado ja publicado");
+
+        // Gera um número pseudo-aleatório usando o hash do bloco
+        uint resultadoRandomico = uint(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, apostaIndex))) % 2;
+
+        string memory valor = resultadoRandomico == 0 ? "cara" : "coroa";
+
+        return valor;
     }
-
-
-
-        function gerarResultado(uint apostaIndex) internal view     returns (string memory) {
-            Aposta storage aposta = listaDeApostas[apostaIndex];
-            require(!aposta.apostaFechada, "Resultado ja publicado");
-
-            // Gera um número pseudo-aleatório usando o hash do bloco
-            uint resultadoRandomico = uint(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, apostaIndex))) % 2;
-
-            string memory valor = resultadoRandomico == 0 ? "cara" : "coroa";
-
-            return valor;
-        }
 
 
 

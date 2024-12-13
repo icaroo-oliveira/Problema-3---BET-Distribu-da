@@ -4,7 +4,7 @@ import sys
 
 # Configurações
 NETWORK = "http://localhost:7545"  # Endereço da rede (Ganache no caso)
-ENDERECO = "0x10C8de61DD3acF40D8aBBe96F09a82A854250341"  # Endereço do contrato
+ENDERECO = "0x441BC5D17B3D5aba910EEf0B243663f7Ab14eF9A"  # Endereço do contrato
 
 # Função para conectar à rede
 def connect_to_network():
@@ -49,11 +49,43 @@ def criar_nova_aposta(descricao, conta):
 
 
 
+# Função para realizar uma aposta
+def depositar_1(valor,conta):
+    web3 = connect_to_network()
+    contrato = load_contract(web3, ENDERECO, "evento.json")
+
+    valor_aposta_ether = valor
+    valor_aposta_wei = web3.to_wei(valor_aposta_ether, 'ether')
+
+    conta = conta
+    
+    
+    tx_hash = contrato.functions.depositar().transact({
+        'from': conta,
+        'value': valor_aposta_wei
+    })
+
+    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+    print("Transação confirmada!")
 
 
 
 
+def sacar_1(valor,conta):
 
+    web3 = connect_to_network()
+    contrato = load_contract(web3, ENDERECO, "evento.json")
+
+    valor_aposta_ether = valor
+    valor_aposta_wei = web3.to_wei(valor_aposta_ether, 'ether')
+
+   
+    tx_hash = contrato.functions.sacar(valor_aposta_wei).transact({
+        'from': conta,
+    })
+
+    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+    print("Transação confirmada!")
 
 
 
@@ -68,15 +100,15 @@ def criando_bet(valor,conta,index,aposta):
     web3 = connect_to_network()
     contrato = load_contract(web3, ENDERECO, "evento.json")
 
+    print(valor)
     valor_aposta_ether = valor
     valor_aposta_wei = web3.to_wei(valor_aposta_ether, 'ether')
+    print(valor_aposta_wei)
 
-    conta = conta
     index = int(index)
-    print(conta,index)
-    tx_hash = contrato.functions.apostar(index,aposta).transact({
-        'from': conta,
-        'value': valor_aposta_wei
+    tx_hash = contrato.functions.apostar(index,aposta,valor_aposta_wei).transact({
+        'from': conta
+        # 'value': valor_aposta_wei
     })
 
     tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
@@ -154,11 +186,23 @@ def historico():
     event_filter = aposta.events.Resultado.create_filter(from_block=0)
     eventos = event_filter.get_all_entries()
 
+    # for evento in eventos:
+    #     print(f"Aposta vencida por: {evento.args['vencedores']}")
+    #     print(f"Índice da aposta: {evento.args['apostaIndex']}")
+    #     print(f"Descrição: {evento.args['descricao']}")
+    #     print(f"Resultado: {evento.args['resultado']}")
+
+    lista = []
     for evento in eventos:
-        print(f"Aposta vencida por: {evento.args['vencedores']}")
-        print(f"Índice da aposta: {evento.args['apostaIndex']}")
-        print(f"Descrição: {evento.args['descricao']}")
-        print(f"Resultado: {evento.args['resultado']}")
+        dic = {
+            'criador': evento['args']['vencedores'],
+            'descricao': evento['args']['descricao'],
+            'index': evento['args']['apostaIndex'],
+            'resultado': evento['args']['resultado']
+        }
+        lista.append(dic)
+    print(lista)
+    return lista
 
 
 

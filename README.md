@@ -58,13 +58,13 @@ Devido à sua capacidade de garantir integridade e segurança nos registros, a b
 
 Contratos inteligentes são programas autoexecutáveis armazenados em blockchain, que funcionam como acordos digitais acionados automaticamente quando condições predefinidas são atendidas. Eles eliminam intermediários, proporcionando eficiência, segurança e transparência nas transações, de forma descentralizada.
 
-No sistema desenvolvido, utilizou-se a blockchain do Ethereum, uma plataforma amplamente reconhecida por sua robustez e suporte a contratos inteligentes. O Ethereum oferece uma infraestrutura confiável e segura para criação e execução de contratos, permitindo que as apostas, validações de resultados e distribuições de prêmios ocorram de forma autônoma e imutável. Essa escolha reforça a transparência e a confiança no sistema, características essenciais para a solução descentralizada proposta.
+No sistema desenvolvido, utilizou-se a blockchain do Ethereum, uma plataforma amplamente reconhecida por sua robustez e suporte a contratos inteligentes. O Ethereum oferece uma infraestrutura confiável e segura para criação e execução de contratos, permitindo que as apostas, validações de resultados e distribuições de prêmios ocorram de forma autônoma e imutável.
 
 **Comunicação entre aplicação e contratos inteligentes**
 
 A comunicação entre uma aplicação e contratos inteligentes em uma blockchain envolve a interação por meio do envio de transações e da leitura de dados armazenados no contrato.
 
-As aplicações utilizam interfaces e bibliotecas específicas para preparar e enviar transações, assinadas digitalmente para garantir autenticidade, contendo informações como o endereço do contrato, a função a ser chamada e outros parâmetros necessários. 
+As aplicações utilizam interfaces e/ou bibliotecas específicas para preparar e enviar transações, assinadas digitalmente para garantir autenticidade, contendo informações como o endereço do contrato, a função a ser chamada e outros parâmetros necessários. 
 
 Após o envio, a rede valida a transação e a registra na blockchain. A aplicação pode então receber feedback sobre a execução ou monitorar eventos emitidos pelo contrato para obter atualizações em tempo real, como notificações sobre alterações no estado do contrato (por exemplo, o resultado de uma aposta).
 
@@ -106,21 +106,27 @@ Esse sistema dinâmico reflete melhor o risco e a probabilidade real dos resulta
 
 ## Metodologia e Resultados
 
-**Arquitetura**: 
+Este tópico apresenta os métodos utilizados para o desenvolvimento do sistema de apostas online descentralizado, desde a escolha das tecnologias até a implementação das funcionalidades principais. A abordagem incluiu o uso da blockchain Ethereum para garantir descentralização e segurança, de contratos inteligentes para automatizar processos críticos, como validação de apostas e distribuição de prêmios, entre outros conceitos.
+
+Além disso, são apresentados os resultados obtidos durante o desenvolvimento, demonstrando como as soluções implementadas atenderam aos requisitos propostos, como transparência, flexibilidade e confiabilidade do sistema.
+
+**Arquitetura**
 
 O sistema apresenta uma organização baseada em algumas estruturas principais, sendo elas: 
-* __BLOCKCHAIN__ - Foi utilizado uma blockchain de testes. O projeto faz uso do Framework HardHat e este já possui uma Blockchain para testes integrada, nela é possível acompanhar transações e as implantações de contrato. A configuração dessa rede é simples, bastando ir no arquivo de configuração do Hardhat, criar uma rede local e associar à porta 8545, que é a da rede do Hardhat.
+
+* __BLOCKCHAIN__ - Foi utilizado uma blockchain de testes. O projeto faz uso do Framework HardHat e este já possui uma Blockchain para testes integrada, nela é possível acompanhar transações e as implantações de contrato. Importante destacar que essa Blockchain do HardHat, simula a do Ethereum. A configuração dessa rede é simples, bastando ir no arquivo de configuração do Hardhat, criar uma rede local e associar à porta 8545, que é a da rede do Hardhat.
+
 * __O CONTRATO__ (responsável por toda lógica envolvendo eventos e apostas) - onde todas funcionalidade esperadas foram implementadas, sendo possível sacar, apostar, depositar, calcular ODDs dinamicamente e entre outros. Para dar o “deploy” do contrato na blockchain (rede do Hardhat), foi feito uso também do framework HardHat, onde o processo de compilação e “deploy” é abstraído e resumido a dois comandos (o de compilação e deploy).
   - Estrutura do contrato: 
-    - Os Eventos  ficam em uma lista que contém todos os Eventos
-    - Saldo associado ao usuário (ver mais na seção Contas)
+    - Os Eventos  ficam em uma lista que contém todos os Eventos;
+    - Saldo associado ao usuário (ver mais na seção Contas);
     - Funções como depósito, saque e outras que interagem com os Eventos e o Contrato.
       <p align="center">
       <img src="/imagens/contrato.drawio.png" width = "300" />
     </p>
     <p align="center"><strong> Figura 3. Representação do contrato </strong></p>
     </strong></p>
-* __COMUNICAÇÃO COM O CONTRATO__(via Web3) - o módulo responsável pela comunicação com o contrato já ‘’lançado’’ na Blockchain. Apresenta funções para se conectar a rede, carregar o contrato com base no endereço e na ABI (representação do contrato) e transferir saldos.
+* __COMUNICAÇÃO COM O CONTRATO__ (via Web3) - o módulo responsável pela comunicação com o contrato já ‘’lançado’’ na Blockchain. Apresenta funções para se conectar a rede, carregar o contrato com base no endereço e na ABI (representação do contrato) e transferir saldos.
 * __A INTERFACE__ (e seus endpoints) - Criação de uma interface utilizando endpoints (Flask) e HTML, como primeira camada de interação com o sistema
   
 A arquitetura por camadas é então como mostrado na Figura 4, a seguir:
@@ -131,18 +137,18 @@ A arquitetura por camadas é então como mostrado na Figura 4, a seguir:
     <p align="center"><strong> Figura 4. Sistema por Camadas </strong></p>
     </strong></p>
 
-**Transações**: 
+**Transações**
 
-Com exceção de métodos para busca de histórico (resultados), Eventos criados ou retorno de ODD para um determinado Evento, todos os outros métodos interagem com a Blockchain e o contrato implementado através de transações. São usadas transações pois elas são capazes de enviar dados para a rede/contrato e alterar o estado do contrato, por exemplo . Para usar essas transações, é feito uso do método ‘’transact’’ da biblioteca ‘’web3” para Python. Esse método abstrai todo o cálculo de gás (usado nas transações), o nonce (usado para garantir a sequência correta das transações), assinatura (onde a rede associa endereço e chave privada, provendo segurança) entre outros.  
+Com exceção de métodos para busca de histórico (resultados), Eventos criados ou retorno de ODD para um determinado Evento, todos os outros métodos interagem com a Blockchain e o contrato implementado através de transações. São usadas transações pois elas são capazes de enviar dados para a rede/contrato e alterar o estado do contrato, por exemplo. Para usar essas transações, é feito uso do método ‘’transact’’ da biblioteca ‘’web3” para Python. Esse método abstrai todo o cálculo de gás (usado nas transações), o nonce (usado para garantir a sequência correta das transações), assinatura (onde a rede associa endereço e chave privada, provendo segurança) entre outros.  
 
-**Contas**: 
+**Contas**
 
 É possível, mediante contrato implantado a “criação de contas”. O processo funciona da seguinte forma: através de um mapeamento baseado em endereços de contas, é associado valores de saldo, criando uma estrutura baseada em uma carteira, para aquele endereço/pessoa. O processo para criação dessa “carteira”, se dá então no momento do primeiro depósito, onde o usuário informa o endereço da conta e o saldo a depositar. Em depósitos subsequentes, o valor só é adicionado ao existente. Para depósito e saque, foram estabelecidas condições baseadas na função de controle “require” do solidity. Saques só são naturalmente possíveis, se o usuário contém um saldo suficiente para saque. Depósito por sua vez, se o valor for maior que 0.
 Pelo saldo ser depositado no contrato em si, esse mapeamento associando endereço com saldo faz-se então imprescindível, para que seja possível administrar corretamente os valores de cada um (ver mais na seção de contabilidade).
 
-**Eventos**: 
+**Eventos**
 
-Qualquer pessoa consegue criar um Evento. Para criação do Evento existe um método no  contrato (“CriarNovoEvento”), esse método é acionado através de uma transação que recebe como parâmetros, a descrição do Evento, o endereço da conta e o momento de término daquele Evento. Se tudo ocorrer corretamente na criação do Evento, é montado um ‘’struct’’ com os parâmetros do Evento, e este é colocado em uma lista de Eventos. Por fim, em caso de sucesso na criação de Evento, um ‘’event” (estrutura do solidity usado no processo de registro de logs) é emitido, esse registro serve para marcar em Log, o início de um evento. Se algo der errado no momento da criação, por exemplo, o término do Evento estiver no passado, uma “exceção” é levantada pelo ‘’require”, a transação será revertida e a função será impedida de terminar. 
+Qualquer pessoa consegue criar um Evento. Para criação do Evento existe um método no  contrato (“CriarNovoEvento”). Esse método é acionado através de uma transação que recebe como parâmetros, a descrição do Evento, o endereço da conta e o momento de término daquele Evento. Se tudo ocorrer corretamente na criação do Evento, é montado um ‘’struct’’ com os parâmetros do Evento, e este é colocado em uma lista de Eventos. Por fim, em caso de sucesso na criação de Evento, um ‘’event” (estrutura do solidity usado no processo de registro de logs) é emitido, esse registro serve para marcar em Log, o início de um evento. Se algo der errado no momento da criação, por exemplo, e o término do Evento estiver no passado, uma “exceção” é levantada pelo ‘’require”, a transação será revertida e a função será impedida de terminar. 
 
 A estrutura do struct para os eventos é a seguinte:
 
@@ -152,30 +158,29 @@ A estrutura do struct para os eventos é a seguinte:
     <p align="center"><strong> Figura 5. Struct do Evento </strong></p>
     </strong></p>
 
-**Apostas**: 
+**Apostas**
 
 É possível apostar em um Evento. A cada nova aposta em um determinado Evento, um ‘’event’’ é emitido para registrar em Log - na blockchain - que uma determinada pessoa apostou. Além de registrado na blockchain, é também registrado dentro do contrato os apostadores de um determinado Evento, sendo possível consultar esses dados posteriormente. 
 Existem  algumas verificações com a função ‘’require’’, sendo elas:
 
 * É necessário que o INDEX (as apostas são identificadas por esse identificador, um número) seja válido;
-* Que aposta não tenha sido encerrada/o período para apostar tenha chegado ao fim;
+* Que aposta não tenha sido encerrada e/ou o período para apostar tenha chegado ao fim;
 * Que o valor da aposta seja maior que 0;
-* E que seja a primeira aposta do usuário (decisão de projeto);
+* Que seja a primeira aposta do usuário (decisão de projeto);
 
 Passando por essas verificações, o saldo é descontado da carteira do usuário e é registrado a aposta daquele usuário. Além disso, outras funções internas ao contrato são chamadas para atualização dos valores totais daquela aposta e outros.
 
-**Simulação em tempo real:**
+**Simulação em tempo real**
 
 O sistema processa eventos em tempo real.
 
-* **Estágio 1: Criação de Evento**: Dado um endereço e a descrição da aposta, um evento é criado.
-* **Estágio 2: Apostas e visualização de eventos criados até um determinado tempo limite**: É possível listar os eventos e realizar apostas.
-* **Estágio 3: Solicitação de resultados**: Com base na requisição de um usuário, se o tempo limite da aposta terminar, o resultado daquela aposta será retornado.
-* **Estágio 4: Distribuição dos prêmios**: O saldo é distribuído corretamente entre os vencedores.
-* **Estágio 5: Checagem de resultado e histórico**: Permite consultar o histórico e os resultados das apostas.
+* **Estágio 1- Criação de Evento:** Dado um endereço e a descrição da aposta, um evento é criado.
+* **Estágio 2- Apostas e visualização de eventos criados até um determinado tempo limite:** É possível listar os eventos e realizar apostas.
+* **Estágio 3- Solicitação de resultados:** Com base na requisição de um usuário, se o tempo limite da aposta terminar, o resultado daquela aposta será retornado.
+* **Estágio 4- Distribuição dos prêmios:** O saldo é distribuído corretamente entre os vencedores.
+* **Estágio 5- Checagem de resultado e histórico:** Permite consultar o histórico e os resultados das apostas.
 
-**Odds:**
-
+**Odds**
 
 O sistema utiliza um sistema de cálculo de Odd baseado em Odds dinâmicas. O processo é simples e funciona da seguinte maneira, com base no valor total apostado, é feito o cálculo para um aposta específica, utilizando o montante apostado naquela aposta específica e fazendo um cálculo proporcional do tipo:
 
@@ -185,10 +190,10 @@ O sistema utiliza um sistema de cálculo de Odd baseado em Odds dinâmicas. O pr
 
 Sendo possível consultar as Odds de uma determinada aposta num Evento.
 
-**Contabilidade**:
+**Contabilidade**
 
 Um dos tópicos mais importantes do sistema, ele perpassa desde a administração do saldo do contrato (associando o valor de cada ‘’conta’’ corretamente) até o momento da distribuição dos prêmios.
-A administração do saldo, já foi brevemente referenciada no presente relatório, mas funciona da seguinte maneira: Quando um usuário deposita um valor, ele deposita no saldo do próprio contrato, ou seja, o contrato em si detém o valor depositado e não sabe a princípio de quem é aquele valor. Para isso, foi então criado as estruturas das carteiras já mencionadas anteriormente, no tópico de contas. 
+A administração do saldo, já foi brevemente referenciada no presente relatório, mas funciona da seguinte maneira: quando um usuário deposita um valor, ele deposita no saldo do próprio contrato, ou seja, o contrato em si detém o valor depositado e não sabe a princípio de quem é aquele valor. Para isso, foi então criado as estruturas das carteiras já mencionadas anteriormente, no tópico de contas. 
 Já para distribuição de prêmio, na primeira etapa é descoberto os vencedores, e depois é feita a verificação se realmente existem vencedores. Depois disso, ocorre a distribuição do prêmio proporcionalmente com base nos valores apostados por cada vencedor. O processo funciona baseado na seguinte fórmula:
 
 <p align="center">
@@ -203,10 +208,12 @@ Como já dito algumas vezes, o sistema faz uso de ‘’events’’ para regist
 O sistema por usar “events” consegue registrar os ‘’events’’ descritos anteriormente on-chain. Existem métodos para buscar esses ‘’events’’ no Log da blockchain, baseado em filtros que distinguem que tipo de “event’’ está sendo ‘’procurado’’, seja de criação, aposta ou resultado do Evento. 
 Além disso, é possível fazer buscas dentro das próprias estruturas de dados do contrato, analisando um Evento (quando foi iniciado, finalizado, os apostadores e resultado).
 
-**Confiabilidade do contrato:**
+**Confiabilidade do contrato**
 
 Durante a construção do código foram feitos alguns ajustes para aumentar a confiabilidade do contrato e a resistência a problemas de concorrência.
+
 * Evitando ataques de reentrada: para evitar ataques de reentrada, a função de saque, foi organizada de modo que primeiro é deduzido o valor da carteira do usuário no contrato e só depois ocorre a transferência através do método ‘’transfer’’. Isso evita que o valor pudesse ser transferido sem antes atualizar o resultado da carteira, potencialmente criando situações onde ocorresse a subtração de dinheiro que não pertence a aquele endereço/carteira. Para aumentar mais ainda a segurança foi feito uso de reentrancy guards, fazendo com que durante o saque, não seja possível a reentrada naquela função até o fim.
+
 * Evitando condições de corrida: Embora a blockchain processe as transações de forma sequencial, é possível que, em um intervalo entre duas transações, o contrato inteligente esteja em um estado intermediário, no qual as mudanças propostas pela primeira transação ainda não foram completamente refletidas no estado do contrato. Nesse momento, uma segunda transação pode alterar o estado do contrato, sobrescrevendo as mudanças da primeira transação. Esse tipo de problema é conhecido como "condição de corrida". No contexto da função de aposta, isso pode ocorrer se dois usuários tentarem apostar no mesmo evento ao mesmo tempo, podendo um sobrescrever a aposta do outro. Para evitar esse tipo de situação, foi implementado um mecanismo de lock usando reentrância. Esse lock impede que a função de aposta seja chamada novamente para o mesmo evento enquanto uma transação ainda está em andamento, garantindo que as apostas sejam processadas de maneira ordenada e sem conflitos.
 
 ## Conclusão

@@ -171,7 +171,9 @@ O sistema processa eventos em tempo real.
 * **Estágio 4: Distribuição dos prêmios**: O saldo é distribuído corretamente entre os vencedores.
 * **Estágio 5: Checagem de resultado e histórico**: Permite consultar o histórico e os resultados das apostas.
 
-**Odds:**:
+**Odds:**
+
+
 O sistema utiliza um sistema de cálculo de Odd baseado em Odds dinâmicas. O processo é simples e funciona da seguinte maneira, com base no valor total apostado, é feito o cálculo para um aposta específica, utilizando o montante apostado naquela aposta específica e fazendo um cálculo proporcional do tipo:
 
 <p align="center">

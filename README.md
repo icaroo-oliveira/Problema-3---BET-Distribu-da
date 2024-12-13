@@ -115,7 +115,11 @@ O sistema apresenta uma organização baseada em algumas estruturas principais, 
     - Os Eventos  ficam em uma lista que contém todos os Eventos
     - Saldo associado ao usuário (ver mais na seção Contas)
     - Funções como depósito, saque e outras que interagem com os Eventos e o Contrato.
-
+    - <p align="center">
+      <img src="/imagens/contrato.drawio.png" width = "600" />
+    </p>
+    <p align="center"><strong> Figura 3. Representação do contrato </strong></p>
+    </strong></p>
 * __COMUNICAÇÃO COM O CONTRATO__(via Web3) - o módulo responsável pela comunicação com o contrato já ‘’lançado’’ na Blockchain. Apresenta funções para se conectar a rede, carregar o contrato com base no endereço e na ABI (representação do contrato) e transferir saldos.
 * __A INTERFACE__ (e seus endpoints) - Criação de uma interface utilizando endpoints (Flask) e HTML, como primeira camada de interação com o sistema
 A arquitetura por camadas é então como mostrado na Figura 1, a seguir:

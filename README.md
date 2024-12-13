@@ -109,8 +109,8 @@ Esse sistema dinâmico reflete melhor o risco e a probabilidade real dos resulta
 **Arquitetura**: 
 
 O sistema apresenta uma organização baseada em algumas estruturas principais, sendo elas: 
-* __BLOCKCHAIN__ - Foi utilizado a blockchain de testes gerado pelo Ganache. Apesar do projeto fazer uso do Framework HardHat e este já possuir uma Blockchain para testes integrada, para melhor acompanhamento das transações e atualização de saldo das contas, foi usado o Ganache GUI (rede Ganache com interface). Para fazer uso disto, o processo era simples: configurar o arquivo de configuração do HardHat para usar como ‘’network” o Ganache GUI.
-* __O CONTRATO__ (responsável por toda lógica envolvendo eventos e apostas) - onde todas funcionalidade esperadas foram implementadas, sendo possível sacar, apostar, depositar, calcular ODDs dinamicamente e entre outros. Para dar o “deploy” do contrato na blockchain (rede Ganache), foi utilizado o framework HardHat, onde o processo de compilação e “deploy” é abstraído e resumido a dois comandos (o de compilação e deploy).
+* __BLOCKCHAIN__ - Foi utilizado uma blockchain de testes. O projeto faz uso do Framework HardHat e este já possui uma Blockchain para testes integrada, nela é possível acompanhar transações e as implantações de contrato. A configuração dessa rede é simples, bastando ir no arquivo de configuração do Hardhat, criar uma rede local e associar à porta 8545, que é a da rede do Hardhat.
+* __O CONTRATO__ (responsável por toda lógica envolvendo eventos e apostas) - onde todas funcionalidade esperadas foram implementadas, sendo possível sacar, apostar, depositar, calcular ODDs dinamicamente e entre outros. Para dar o “deploy” do contrato na blockchain (rede do Hardhat), foi feito uso também do framework HardHat, onde o processo de compilação e “deploy” é abstraído e resumido a dois comandos (o de compilação e deploy).
   - Estrutura do contrato: 
     - Os Eventos  ficam em uma lista que contém todos os Eventos
     - Saldo associado ao usuário (ver mais na seção Contas)

@@ -215,4 +215,4 @@ Por fim, foi possível criar um sistema de apostas online descentralizado utiliz
 
 Através do uso de odds dinâmicas e a comunicação eficiente entre a aplicação e os contratos inteligentes, o sistema garante uma experiência interativa, flexível e segura aos usuários, ao mesmo tempo em que mantém a descentralização e a resistência a falhas. A utilização de mecanismos como a Tolerância a Falhas Bizantinas (BFT) assegura que a plataforma continue operando de forma confiável, mesmo diante de adversidades ou tentativas de manipulação.
 
-AQUI TU COLOCA PONTOS A MELHORAR OU QUALQUER OUTRA COISA SLA
+De melhoras para o sistema, poderia criar um oráculo principalmente para garantir maior segurança na aleatoridade dos resultados dos Eventos, sendo que essa aleatoridade depende da mineração de blocos e pode potencialmente ser manipulada por mineradores.

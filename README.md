@@ -109,12 +109,16 @@ Esse sistema dinâmico reflete melhor o risco e a probabilidade real dos resulta
 **Arquitetura**: 
 
 O sistema apresenta uma organização baseada em algumas estruturas principais, sendo elas: 
-* BLOCKCHAIN - Foi utilizado a blockchain de testes gerado pelo Ganache. Apesar do projeto fazer uso do Framework HardHat e este já possuir uma Blockchain para testes integrada, para melhor acompanhamento das transações e atualização de saldo das contas, foi usado o Ganache GUI (rede Ganache com interface). Para fazer uso disto, o processo era simples: configurar o arquivo de configuração do HardHat para usar como ‘’network” o Ganache GUI.
-* O CONTRATO (responsável por toda lógica envolvendo eventos e apostas) - onde todas funcionalidade esperadas foram implementadas, sendo possível sacar, apostar, depositar, calcular ODDs dinamicamente e entre outros. Para dar o “deploy” do contrato na blockchain (rede Ganache), foi utilizado o framework HardHat, onde o processo de compilação e “deploy” é abstraído e resumido a dois comandos (o de compilação e deploy).
+* __BLOCKCHAIN__ - Foi utilizado a blockchain de testes gerado pelo Ganache. Apesar do projeto fazer uso do Framework HardHat e este já possuir uma Blockchain para testes integrada, para melhor acompanhamento das transações e atualização de saldo das contas, foi usado o Ganache GUI (rede Ganache com interface). Para fazer uso disto, o processo era simples: configurar o arquivo de configuração do HardHat para usar como ‘’network” o Ganache GUI.
+* __O CONTRATO__ (responsável por toda lógica envolvendo eventos e apostas) - onde todas funcionalidade esperadas foram implementadas, sendo possível sacar, apostar, depositar, calcular ODDs dinamicamente e entre outros. Para dar o “deploy” do contrato na blockchain (rede Ganache), foi utilizado o framework HardHat, onde o processo de compilação e “deploy” é abstraído e resumido a dois comandos (o de compilação e deploy).
   - Estrutura do contrato: 
     - Os Eventos  ficam em uma lista que contém todos os Eventos
     - Saldo associado ao usuário (ver mais na seção Contas)
     - Funções como depósito, saque e outras que interagem com os Eventos e o Contrato.
+
+* __COMUNICAÇÃO COM O CONTRATO__(via Web3) - o módulo responsável pela comunicação com o contrato já ‘’lançado’’ na Blockchain. Apresenta funções para se conectar a rede, carregar o contrato com base no endereço e na ABI (representação do contrato) e transferir saldos.
+* __A INTERFACE__ (e seus endpoints) - Criação de uma interface utilizando endpoints (Flask) e HTML, como primeira camada de interação com o sistema
+A arquitetura por camadas é então como mostrado na Figura 1, a seguir:
 
 
 **Protocolo de comunicação**: 

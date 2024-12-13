@@ -126,107 +126,83 @@ O sistema apresenta uma organização baseada em algumas estruturas principais, 
 A arquitetura por camadas é então como mostrado na Figura 4, a seguir:
 
   <p align="center">
-      <img src="/imagens/Figure_1.png" width = "300" />
+      <img src="/imagens/Figure_1.png" width = "500" />
     </p>
     <p align="center"><strong> Figura 4. Sistema por Camadas </strong></p>
     </strong></p>
 
-**Protocolo de comunicação**: 
+**Transações**: 
 
-O protocolo de comunicação é via HTTP como já mencionado e feito com Flask. Foi criado métodos para POST e GET. 
+Com exceção de métodos para busca de histórico (resultados), Eventos criados ou retorno de ODD para um determinado Evento, todos os outros métodos interagem com a Blockchain e o contrato implementado através de transações. São usadas transações pois elas são capazes de enviar dados para a rede/contrato e alterar o estado do contrato, por exemplo . Para usar essas transações, é feito uso do método ‘’transact’’ da biblioteca ‘’web3” para Python. Esse método abstrai todo o cálculo de gás (usado nas transações), o nonce (usado para garantir a sequência correta das transações), assinatura (onde a rede associa endereço e chave privada, provendo segurança) entre outros.  
 
-Para comunicações que seguem a direção Cliente -> Servidor, os seguintes métodos são usados:
+**Contas**: 
 
-| **Endpoint**           | **Método HTTP** | **Descrição**                                                                                     |
-|------------------------|-----------------|---------------------------------------------------------------------------------------------------|
-| `/caminhos_cliente`    | GET             | Retorna os caminhos disponíveis de origem a destino, solicitado diretamente pelo cliente.|
-| `/passagens_cliente`   | GET             | Verifica e retorna as passagens compradas pelo cliente, solicitado pelo próprio cliente. |
-| `/comprar_cliente`     | POST            | Registra e verifica a compra de trechos, solicitado diretamente pelo cliente.            |
+É possível, mediante contrato implantado a “criação de contas”. O processo funciona da seguinte forma: através de um mapeamento baseado em endereços de contas, é associado valores de saldo, criando uma estrutura baseada em uma carteira, para aquele endereço/pessoa. O processo para criação dessa “carteira”, se dá então no momento do primeiro depósito, onde o usuário informa o endereço da conta e o saldo a depositar. Em depósitos subsequentes, o valor só é adicionado ao existente. Para depósito e saque, foram estabelecidas condições baseadas na função de controle “require” do solidity. Saques só são naturalmente possíveis, se o usuário contém um saldo suficiente para saque. Depósito por sua vez, se o valor for maior que 0.
+Pelo saldo ser depositado no contrato em si, esse mapeamento associando endereço com saldo faz-se então imprescindível, para que seja possível administrar corretamente os valores de cada um (ver mais na seção de contabilidade).
 
-Todas essas requisições possuem o campo "mensagem", que pode assumir os seguintes valores:
+**Eventos**: 
 
-| Mensagem (Cliente)                        | Significado                                                 |
-|-------------------------------------------|------------------------------------------------------------ |
-| "[Origem], [Destino]”                     | Solicitando caminhos entre [Origem] e [Destino].            |
-| ”[Cpf],[Caminho]”                         | Comprando uma passagem para o [Caminho].                    |
-| “[Cpf]”                                   | Solicitando passagens compradas por [Cpf].                  |
+Qualquer pessoa consegue criar um Evento. Para criação do Evento existe um método no  contrato (“CriarNovoEvento”), esse método é acionado através de uma transação que recebe como parâmetros, a descrição do Evento, o endereço da conta e o momento de término daquele Evento. Se tudo ocorrer corretamente na criação do Evento, é montado um ‘’struct’’ com os parâmetros do Evento, e este é colocado em uma lista de Eventos. Por fim, em caso de sucesso na criação de Evento, um ‘’event” (estrutura do solidity usado no processo de registro de logs) é emitido, esse registro serve para marcar em Log, o início de um evento. Se algo der errado no momento da criação, por exemplo, o término do Evento estiver no passado, uma “exceção” é levantada pelo ‘’require”, a transação será revertida e a função será impedida de terminar. 
+
+A estrutura do struct para os eventos é a seguinte:
+
+imagem.
 
 
-De outro modo, Servidor → Servidor (servidor enviando mensagem para servidor):
+**Apostas**: 
 
-Existem métodos GET com os endpoints "/passagens_servidor" e "/caminhos_servidor", que são usados para a comunicação entre servidores, quando um servidor solicita um determinado recurso a outro. Por exemplo, um cliente pode se conectar ao servidor A, e o servidor A, por sua vez, conecta-se aos outros para retornar todas as passagens daquele usuário. O /caminhos_servidor, por outro lado, é utilizado quando um servidor solicita caminhos a outro servidor. Por fim, existe um método POST com o endpoint /comprar_servidor, que é usado quando um servidor solicita a outro a compra de trechos pertecentes ao caminho escolhido pelo cliente para compra.
+É possível apostar em um Evento. A cada nova aposta em um determinado Evento, um ‘’event’’ é emitido para registrar em Log - na blockchain - que uma determinada pessoa apostou. Além de registrado na blockchain, é também registrado dentro do contrato os apostadores de um determinado Evento, sendo possível consultar esses dados posteriormente. 
+Existem  algumas verificações com a função ‘’require’’, sendo elas:
 
-| **Endpoint**           | **Método HTTP** | **Descrição**                                                                                      |
-|------------------------|-----------------|----------------------------------------------------------------------------------------------------|
-| `/caminhos_servidor`   | GET             | Retorna os caminhos disponíveis de origem a destino, conforme solicitado por outro servidor.       |
-| `/passagens_servidor`  | GET             | Verifica e retorna as passagens compradas de um cliente, conforme solicitado por outro servidor.   |
-| `/comprar_servidor`    | POST            | Registra e verifica a compra de trechos solicitada por outro servidor                              |
+* É necessário que o INDEX (as apostas são identificadas por esse identificador, um número) seja válido;
+* Que aposta não tenha sido encerrada/o período para apostar tenha chegado ao fim;
+* Que o valor da aposta seja maior que 0;
+* E que seja a primeira aposta do usuário (decisão de projeto);
 
-Também possuem um campo mensagem e possui semelhança com as mensagens das requições cliente-servidor.
+Passando por essas verificações, o saldo é descontado da carteira do usuário e é registrado a aposta daquele usuário. Além disso, outras funções internas ao contrato são chamadas para atualização dos valores totais daquela aposta e outros.
 
-Para além dos GET e POST, ainda no protocolo de comunicação, existem mensagens de ''rollback'' ou seja, mensagens que buscam desfazer algum tipo de alteração que tinha sido feita anteriormente. É usada pela lógica das compras sempre começarem do servidor onde foi conectado e dispara Threads para os outros servidores se eles tiverem trechos a cederem. Se o cliente conectou no servidor A e tem trechos envolvendo esse servidor, a compra já é feita. Se tiver trechos de outros servidores, por exemplo do B, e está disponível, é feita a compra, porém se tiver um trecho no servidor C, e este não estiver disponível, é feito o rollback tanto em A quanto em B.
+**Simulação em tempo real:**
 
-| Endpoint                   | Significado                                                                                                                                                                               |
-|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/rollbaack        `       | Ordem de rollback (desfaz compra caso outro servidor não consiga realizar sua compra)                                                                                     |
+O sistema processa eventos em tempo real.
 
+* **Estágio 1: Criação de Evento**: Dado um endereço e a descrição da aposta, um evento é criado.
+* **Estágio 2: Apostas e visualização de eventos criados até um determinado tempo limite**: É possível listar os eventos e realizar apostas.
+* **Estágio 3: Solicitação de resultados**: Com base na requisição de um usuário, se o tempo limite da aposta terminar, o resultado daquela aposta será retornado.
+* **Estágio 4: Distribuição dos prêmios**: O saldo é distribuído corretamente entre os vencedores.
+* **Estágio 5: Checagem de resultado e histórico**: Permite consultar o histórico e os resultados das apostas.
 
-
-**Roteamento**: 
-
-Como é requerido o compartilhamento de trechos entre os servidores, a ideia do VendePASS precisou ser aprimorada para considerar a possibilidade de diferentes servidores oferecer seus trechos para completar um caminho, caso o servidor que o cliente conectou-se não tivesse tal trecho disponível. É importante salientar que os três servidores oferecem os mesmos trechos, com as mesmas cidades e com as mesmas distâncias. A diferença entre eles é o valor cobrado por 100km.
-
-Depois de escolher a cidade origem e a cidade destino, o servidor conectado irá procurar pelo seus 10 melhores caminhos, ou seja, os caminhos mais curtos e com trechos com assentos disponíveis. A diferença agora, é que o servidor conectado também vai pedir aos outros dois servidores, os seus 10 melhores caminhos. No cenário perfeito, o servidor conectado vai retornar ao cliente 30 caminhos.
-
-Essa somatória de caminhos, não é automaticamente exibida ao cliente. Primeiramente, os trechos desses caminhos, com marcações indicando a qual servidor pertence cada trecho, são misturados, tendo a possibilidade agora de formar novos caminhos com trechos de diferentes servidores. Por exemplo: o melhor caminho (mais curto e com assento) possível entre Salvador e Rio de Janeiro, não consegue ser formado no servidor A devido a falta de assento de um trecho desse caminho em questão; porém no servidor B, esse trecho está disponível em outro caminho e foi retornado. Ao procurar novamente os melhores caminhos, esse trecho do servidor B irá completar o melhor caminho possível que não podia ser formado no servidor A e esse caminho será disponibilizado ao cliente.
-
-![Salvador-Rio de Janeiro](/imagens/meu_gif.gif)
-
-Com a junção e mistura desses trechos, é necessário novamente separar os melhores caminhos, considerando agora duas métricas: os 5 caminhos mais curtos e os 5 caminhos mais baratos. Por decisão da equipe, caso um determinado trecho tenha sido retornado por mais de um servidor, é preciso escolher, ou seja, dar preferência a um servidor. Dessa forma, nos 5 caminhos mais baratos, caso tenha trechos retornados por diferentes servidores, irá usar o critério de servidor mais barato para determinar qual trecho será incorporado ao caminho e exibido ao cliente. Diferentemente, nos 5 caminhos mais curtos, irá usar o critério de dar preferência ao servidor conectado pelo cliente, visto que se um cliente conectou em um servidor n, ele quer a prioridade de comprar um trecho desse servidor. Caso o servidor conectado não tenha disponibilidade de tal trecho, o critério será o mesmo dos 5 caminhos mais baratos, visto que a distância de um trecho é igual em todos os servidores.
-
-Seguindo essa lógica, um caminho pode ser encontrado misturando trechos dos três servidores, a depender da preferência. Assim, é possível encontrar de fato a melhor opção de compra para um cliente, utilizando e entrelaçando dados distribuídos entre os três servidores.
-
-**Concorrência Distribuída**: 
-
-Para lidar com a concorrência foi feito uso de um algorítmo que usava de Locks (responsáveis por travarem regiões críticas) e Threads para processarem requisições simultâneas à outros servidores. O Lock de um servidor é comum a todas requisições e endpoints. O algoritmo implementado que preza sempre pelo cenário ideal, recebe o nome de "One Phase Commit", pois se existe uma necessidade de trecho de um servidor, ele já inicia a compra, mesmo que o outro servidor nesse meio tempo possa ter perdido aquela vaga de alguma forma. Se esse cenário ocorrer, como já foi dito, é disparada uma ordem de "rollback".
+**Odds:**:
+O sistema utiliza um sistema de cálculo de Odd baseado em Odds dinâmicas. O processo é simples e funciona da seguinte maneira, com base no valor total apostado, é feito o cálculo para um aposta específica, utilizando o montante apostado naquela aposta específica e fazendo um cálculo proporcional do tipo:
 
 <p align="center">
-  <img src="/imagens/diagrama_sequencia_caso.png" width = "600" />
+  Odd = (Valor_total_da_aposta / Valor_no_resultado) * 100%
 </p>
-<p align="center"><strong> Figura 1. Fluxo de mensagens para uma compra bem sucedida envolvendo A e B </strong></p>
-</strong></p>
 
-Para os casos onde, por exemplo, uma ordem de rollback foi emitida para o servidor B, e esse cai antes de receber a alteração solicitada, o servidor que emitiu a ordem de rollback salva em um arquivo essa ordem, para posteriormente manda-lá novamente. A verificação de pendência de rollback é sempre emitida quando uma requisição - não importa se Get ou Post - ocorre, se a verificação acusar um ''rollback'' não realizado, a alteração é desfeita.
+Sendo possível consultar as Odds de uma determinada aposta num Evento.
 
-O diagrama de sequência abaixo, ilustra outros casos, como a compra ideal e trechos indisponíveis em outros servidores ou no próprio A.
+**Contabilidade**:
+
+Um dos tópicos mais importantes do sistema, ele perpassa desde a administração do saldo do contrato (associando o valor de cada ‘’conta’’ corretamente) até o momento da distribuição dos prêmios.
+A administração do saldo, já foi brevemente referenciada no presente relatório, mas funciona da seguinte maneira: Quando um usuário deposita um valor, ele deposita no saldo do próprio contrato, ou seja, o contrato em si detém o valor depositado e não sabe a princípio de quem é aquele valor. Para isso, foi então criado as estruturas das carteiras já mencionadas anteriormente, no tópico de contas. 
+Já para distribuição de prêmio, na primeira etapa é descoberto os vencedores, e depois é feita a verificação se realmente existem vencedores. Depois disso, ocorre a distribuição do prêmio proporcionalmente com base nos valores apostados por cada vencedor. O processo funciona baseado na seguinte fórmula:
 
 <p align="center">
-  <img src="/imagens/diagrama_sequencia.png" width = "600" />
+  P = (V / Tv)*Tg
 </p>
-<p align="center"><strong> Figura 2. Fluxo de mensagens para uma compra bem sucedida e não sucedida por falta de trechos </strong></p>
-</strong></p>
 
+Onde P é o prêmio proporcional a um vencedor, V o valor apostado por aquele vencedor, Tv total apostado pelos vencedores e Tg o total apostado por todos (vencedores e perdedores).
 
-**Confiabilidade da solução**: 
+**Publicação**
 
-Se um cliente está fazendo uma compra no Servidor A e esse cai, é possível prosseguir com a compra a partir daquele momento. Isso se da pelo uso do paradigma Stateless provido pelo próprio HTTP.
-Se um cliente está fazendo uma compra no Servidor A e essa compra tem trechos em outros servidores, e um desses não responde ou não tem mais trechos, a compra em A sofre rollback.
-A priori, com a queda de servidores a consistência da concorrência distribuída se mantém, e mesmo que o servidor que o cliente se conectou (coordenador) tenha algum erro de conexão na requisição de compra, se manterá a persistência das ordens de rollbacks que devem ser realizadas por outros servidores.
+Como já dito algumas vezes, o sistema faz uso de ‘’events’’ para registro de Log na blockchain. O contrato apresenta 3 ‘’events’’ sendo um para criação de Eventos, um para apostas realizadas e o último para um resultado de um Evento.
+O sistema por usar “events” consegue registrar os ‘’events’’ descritos anteriormente on-chain. Existem métodos para buscar esses ‘’events’’ no Log da blockchain, baseado em filtros que distinguem que tipo de “event’’ está sendo ‘’procurado’’, seja de criação, aposta ou resultado do Evento. 
+Além disso, é possível fazer buscas dentro das próprias estruturas de dados do contrato, analisando um Evento (quando foi iniciado, finalizado, os apostadores e resultado).
 
-Quando um servidor recebe uma requisição de compra de outro servidor, foi adicionado um loop para verificar "n" vezes se os trechos estão de fato indisponíveis. Esse "n" pode ser de 1 a 5, com um tempo de espera para verificar novamente que vai de 100ms a 300ms. Dessa forma, no "pior cenário", o proceso de verificação de disponibilidade de trechos pode demorar 1,5s (5 vezes x 300ms). Esta implementação foi adicionada, visando combater a situação em que, por exemplo, um cliente conectado no servidor A e outro cliente conectado no servidor B, iniciem uma compra com o mesmo caminho e nenhum dos dois consiga efetuar a compra, visto que ambos os servidores vão "comprar" os trechos em seu próprio servidor e depois vão verificar no servidor alheio se os trechos ainda estam disponíveis, porém como os servidores já "compraram" internamente os trechos, ambos vão retornar que não tem mais os trechos disponíveis e assim nenhum dos dois cliente vão efetuar a compra. Com a adição do loop essa situação é minimizada, tendo a possibilidade de ter o tempo necessário de um servidor "desistir" da compra e o outro conseguir finalizar.
+**Confiabilidade do contrato:**
 
-**Avaliação da solução**: 
-Foi criado um script para testes. 
-* O primeiro cenário foi envolvendo somente um servidor A, de modo que 5 clientes tentam competir por 3 vagas, ocorreu tudo bem de modo que 2 clientes ficaram sem vagas, mas não foi computado nenhuma vaga que não existia.
-* Já o segundo cenário envolvia agora três servidores A, B e C. O script se conectava ao Servidor B, e abria 5 terminais. O que ocorre é que para o Servidor A tinha 4 vagas para o trecho, e o B e C tinha 5 vagas para os respectivos trechos. A compra foi efetuada corretamente, e somente 4 passagens foram compradas, de modo que foi feito o rollback de uma delas.
-* O Último script para testes envolveu uma magnitude muito grande de solicitações (100), onde no inicio das 100 solicitações ocorreu uma demora, mas conforme chegou na faixa dos 60-70 solicitações o fluxo aumentou rapidamente.
-* O último, o script abria 20 terminais, sendo que os pares o cliente era conectado ao A e os impares o cliente era conectado ao B. O mesmo recursos eram solicitados, pelos testes o programa se comportou bem, apesar do número baixo de vagas (eram somente 10 para 20 clientes), assim como no primeiro caso, não houve incoerência relacionado ao número de vagas, seja por sobrecompra ou subcompra. Mais testes nesse cenário são necessários, para saber o quão balanceados estão sendo as compras feita em cada servidores e se será necessário algum sistema de Load balancing.
-
-**Documentação do código**:
-O código está completamente comentado e documentado.
-
-**Emprego do Docker**:
-Implementado. Foi criado Dockers para os servidor A, B e C e um para o cliente. Foi criado também um docker-compose, para orquestras o relacionamento das 4 entidades e o estabelecimento de uma rede entra elas no ambiente de testagem Docker.
+Durante a construção do código foram feitos alguns ajustes para aumentar a confiabilidade do contrato e a resistência a problemas de concorrência.
+* Evitando ataques de reentrada: para evitar ataques de reentrada, a função de saque, foi organizada de modo que primeiro é deduzido o valor da carteira do usuário no contrato e só depois ocorre a transferência através do método ‘’transfer’’. Isso evita que o valor pudesse ser transferido sem antes atualizar o resultado da carteira, potencialmente criando situações onde ocorresse a subtração de dinheiro que não pertence a aquele endereço/carteira. Para aumentar mais ainda a segurança foi feito uso de reentrancy guards, fazendo com que durante o saque, não seja possível a reentrada naquela função até o fim.
+* Evitando condições de corrida: Embora a blockchain processe as transações de forma sequencial, é possível que, em um intervalo entre duas transações, o contrato inteligente esteja em um estado intermediário, no qual as mudanças propostas pela primeira transação ainda não foram completamente refletidas no estado do contrato. Nesse momento, uma segunda transação pode alterar o estado do contrato, sobrescrevendo as mudanças da primeira transação. Esse tipo de problema é conhecido como "condição de corrida". No contexto da função de aposta, isso pode ocorrer se dois usuários tentarem apostar no mesmo evento ao mesmo tempo, podendo um sobrescrever a aposta do outro. Para evitar esse tipo de situação, foi implementado um mecanismo de lock usando reentrância. Esse lock impede que a função de aposta seja chamada novamente para o mesmo evento enquanto uma transação ainda está em andamento, garantindo que as apostas sejam processadas de maneira ordenada e sem conflitos.
 
 ## Conclusão
 

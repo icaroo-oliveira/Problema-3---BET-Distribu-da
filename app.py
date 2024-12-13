@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from logica import (
-    criar_nova_aposta, listar_apostas, criando_bet, resultado, historico, calcular_odds_dinamicas
+    criar_nova_aposta, listar_apostas, criando_bet, resultado, historico, calcular_odds_dinamicas,depositar_1,sacar_1
 )
 from flask_cors import CORS
 
@@ -53,6 +53,29 @@ def definir_resultado():
 def ver_historico():
     historico_dados = historico()
     return jsonify(historico_dados)
+
+
+
+
+@app.route('/depositar', methods=['PUT'])
+def depositar():
+    data = request.json
+    valor = data.get('valor')
+    conta = data.get('conta')
+    depositar_1(valor,conta)
+    
+    return jsonify({"message":"depoisito realziado!"})
+
+
+
+@app.route('/sacar', methods=['PUT'])
+def sacar():
+    data = request.json
+    valor = data.get('valor')
+    conta = data.get('conta')
+    sacar_1(int(valor),conta)
+    
+    return jsonify({"message":"saque realizado!"})
 
 if __name__ == "__main__":
     app.run(debug=True)

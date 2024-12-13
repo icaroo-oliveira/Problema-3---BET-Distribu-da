@@ -108,18 +108,14 @@ Esse sistema dinâmico reflete melhor o risco e a probabilidade real dos resulta
 
 **Arquitetura**: 
 
-O sistema apresenta uma estrutura onde um servidor dispõe de um conjunto de métodos para troca de informações com os clientes e entre servidores. Dessa forma, um usuário deve escolher qual dos servidores ele deseja conectar-se, ou seja, determina o servidor coordenador, e esse servidor coordenador que será responsável por enviar requisições aos outros servidores, caso necessário. Para a implementação, foi usado o Protocolo de Transferência de Hipertexto(Hypertext Transfer Protocol), utilizando o micro-framework Flask para criação da API com métodos como GET e POST e seus respectivos endpoints. O uso do HTTP se deu pelo fato de ser um padrão flexível, sem estado e bem estruturado, que se localiza em cima do TCP, responsável pela entrega dos pacotes de dados (IBM,2024). Cada um dos três servidores é apoiado por três arquivos no formato JSON. O primeiro para armazenamento de informações de passagens (que registrará informações das compras de uma pessoa/cpf como distância, número do assento, trajeto e valor). O segundo, será um arquivo que conterá em si os trechos entre cidades, a distância entre essas cidades e os assentos disponíveis para cada trecho, além de também salvar informações do comprador de um assento de determinado trecho, como o CPF. Por fim, o terceiro irá armazenar rollbacks pendentes de outros servidores, ou seja, trechos de outros servidores que precisam ser "descomprados". Esse terceiro arquivo será melhor abordado posteriormente na documentação.
+O sistema apresenta uma organização baseada em algumas estruturas principais, sendo elas: 
+* BLOCKCHAIN - Foi utilizado a blockchain de testes gerado pelo Ganache. Apesar do projeto fazer uso do Framework HardHat e este já possuir uma Blockchain para testes integrada, para melhor acompanhamento das transações e atualização de saldo das contas, foi usado o Ganache GUI (rede Ganache com interface). Para fazer uso disto, o processo era simples: configurar o arquivo de configuração do HardHat para usar como ‘’network” o Ganache GUI.
+* O CONTRATO (responsável por toda lógica envolvendo eventos e apostas) - onde todas funcionalidade esperadas foram implementadas, sendo possível sacar, apostar, depositar, calcular ODDs dinamicamente e entre outros. Para dar o “deploy” do contrato na blockchain (rede Ganache), foi utilizado o framework HardHat, onde o processo de compilação e “deploy” é abstraído e resumido a dois comandos (o de compilação e deploy).
+  - Estrutura do contrato: 
+    - Os Eventos  ficam em uma lista que contém todos os Eventos
+    - Saldo associado ao usuário (ver mais na seção Contas)
+    - Funções como depósito, saque e outras que interagem com os Eventos e o Contrato.
 
-Os módulos do cliente são apoiados por sub-módulos:
-* O primeiro está relacionado a utilidades.
-* O segundo é chamado *interface*. Que é um sub-módulo responsável por toda interatividade por parte do cliente. É um “módulo meio” responsável por coletar ‘’inputs’’ e passar para a parte de processamento.
-* O último, comum também ao servidor, é o *connection*. Ele é o responsável por implementar as requisições como POST e GET.
-
-Já o módulo do servidor é apoiado por dois sub-módulos:
-* O primeiro é relacionado a utilidades do servidor, como a criação do grafo de trechos (já predefinido), carregar o grafo (trechos de viagem), carregar as passagens já compradas, salvar grafos e passagens, encontrar caminhos e verificações de compras em um CPF ou caminhos válidos. 
-* O segundo é o *connection*, explicado acima, detêm as chamadas para POST, GET e algumas solicitações tipo de compras.
-
-A arquitetura é caracterizado como de Microserviços com a possibilidade de compartilhamento de dados, visto que os servidores são independentes e podem cooperar ou não - cada um detém seus próprios arquivos JSON, cooperação essa que se da via API Restful. Além disso, se caracteriza também como arquitetura uma arquitetura distribuída.
 
 **Protocolo de comunicação**: 
 

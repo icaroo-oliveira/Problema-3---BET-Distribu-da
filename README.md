@@ -115,8 +115,8 @@ O sistema apresenta uma organização baseada em algumas estruturas principais, 
     - Os Eventos  ficam em uma lista que contém todos os Eventos
     - Saldo associado ao usuário (ver mais na seção Contas)
     - Funções como depósito, saque e outras que interagem com os Eventos e o Contrato.
-    - <p align="center">
-      <img src="/imagens/contrato.drawio.png" width = "600" />
+      <p align="center">
+      <img src="/imagens/contrato.drawio.png" width = "300" />
     </p>
     <p align="center"><strong> Figura 3. Representação do contrato </strong></p>
     </strong></p>

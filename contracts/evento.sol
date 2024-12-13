@@ -3,12 +3,13 @@ pragma solidity >=0.8.2 <0.9.0;
 
 
 
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 
+contract evento is ReentrancyGuard {
 
-contract evento {
-
-
+    uint256 b=0;
+    mapping(uint => bool) private eventoLock;//novo
 
 
     mapping(address => uint256) public carteiras;
@@ -20,21 +21,48 @@ contract evento {
     }
 
     struct Aposta {
-    string descricao;                         
-    address dono;                             
-    uint unlockTime;                         
-    mapping(address => ApostaInfo) apostas; 
-    mapping(string => uint256) tipoAposta;   
-    mapping(string => address[]) tipoParaApostadores; // Apostadores por tipo de aposta
-    uint256 totalApostadoGeral;              // Valor total apostado na aposta
-    bool apostaFechada;
+        string descricao;  
+        address dono;                           
+        uint unlockTime;                        
+        mapping(address => ApostaInfo) apostas; 
+        mapping(string => uint256) tipoAposta;   
+        mapping(string => address[]) tipoParaApostadores; 
+        uint256 totalApostadoGeral;              
+        bool apostaFechada; 
     }
 
 
     Aposta[] public listaDeApostas;
 
-    event NovaApostaCriada(address criador, uint apostaIndex, string descricao);
-    event Resultado(uint apostaIndex, string resultado,address[] vencedores,string descricao);
+    // event NovaApostaCriada(address criador, uint apostaIndex, string descricao);
+    // event Resultado(uint apostaIndex, string resultado,address[] vencedores,string descricao);
+
+
+    event NovaApostaCriada(
+        address indexed criador,      
+        uint indexed apostaIndex,     
+        string descricao              
+    );
+
+
+
+
+
+    modifier nonReentrantEvento(uint eventoIndex) {
+        require(!eventoLock[eventoIndex], "Reentrancy detected for this event");
+        eventoLock[eventoIndex] = true;  // Bloqueia o evento específico
+        _;
+        eventoLock[eventoIndex] = false; // Libera o evento após execução
+    }
+
+
+
+
+
+
+
+
+
 
 
     //novo unloctime
@@ -60,66 +88,56 @@ contract evento {
 
 
 
-    // function apostar(uint apostaIndex, string memory tipoResultado) public payable {
+    event ApostaRealizada(
+        address indexed apostador,
+        uint indexed apostaIndex, 
+        string tipoResultado,
+        uint256 valorAposta
+    );//novo
 
-
-         
-    //     require(apostaIndex < listaDeApostas.length, "Aposta nao encontrada");
-    //     Aposta storage aposta = listaDeApostas[apostaIndex];
-
-    //     require(!aposta.apostaFechada, "Aposta ja fechada");
-
-    //     require(
-    //         block.timestamp < aposta.unlockTime, //novo
-    //         "Unlock time should be in the future"
-    //     );
-
-
-    //     require(msg.value > 0, "Valor da aposta deve ser maior que zero");
-    //     require(bytes(aposta.apostas[msg.sender].tipoAposta).length == 0, "Ja realizou uma aposta");
-
-    //     ApostaInfo memory novaApostaInfo = ApostaInfo({
-    //         tipoAposta: tipoResultado,
-    //         valor: msg.value
-    //     });
-
-    //     aposta.apostas[msg.sender] = novaApostaInfo;
-    //     aposta.tipoParaApostadores[tipoResultado].push(msg.sender);
-    //     atualizarApostas(aposta, tipoResultado, msg.value);
-    // }
+    event Resultado(
+        uint indexed apostaIndex,      
+        string indexed resultado,       
+        address[] vencedores,         
+        string descricao               
+    );//novo
 
 
 
 
-    function apostar(uint apostaIndex, string memory tipoResultado, uint256 valorAposta) public {
-    require(apostaIndex < listaDeApostas.length, "Aposta nao encontrada");
-    Aposta storage aposta = listaDeApostas[apostaIndex];
 
-    require(!aposta.apostaFechada, "Aposta ja fechada");
-    require(
-        block.timestamp < aposta.unlockTime,
-        "Unlock time should be in the future"
-    );
 
-    require(valorAposta > 0, "Valor da aposta deve ser maior que zero");
-    require(bytes(aposta.apostas[msg.sender].tipoAposta).length == 0, "Ja realizou uma aposta");
+    function apostar(uint apostaIndex, string memory tipoResultado, uint256 valorAposta) public nonReentrantEvento(apostaIndex){
+        require(apostaIndex < listaDeApostas.length, "Aposta nao encontrada");
+        Aposta storage aposta = listaDeApostas[apostaIndex];
 
-    // Verifica se o usuário tem saldo suficiente na carteira
-    require(carteiras[msg.sender] >= valorAposta, "Saldo insuficiente na carteira");
+        require(!aposta.apostaFechada, "Aposta ja fechada");
+        require(
+            block.timestamp < aposta.unlockTime,
+            "Unlock time should be in the future"
+        );
 
-    // Deduz o valor da carteira do usuário
-    carteiras[msg.sender] -= valorAposta;
+        require(valorAposta > 0, "Valor da aposta deve ser maior que zero");
+        require(bytes(aposta.apostas[msg.sender].tipoAposta).length == 0, "Ja realizou uma aposta");
 
-    // Atualiza a estrutura da aposta
-    ApostaInfo memory novaApostaInfo = ApostaInfo({
-        tipoAposta: tipoResultado,
-        valor: valorAposta
-    });
+        // Verifica se o usuário tem saldo suficiente na carteira
+        require(carteiras[msg.sender] >= valorAposta, "Saldo insuficiente na carteira");
 
-    aposta.apostas[msg.sender] = novaApostaInfo;
-    aposta.tipoParaApostadores[tipoResultado].push(msg.sender);
+        // Deduz o valor da carteira do usuário
+        carteiras[msg.sender] -= valorAposta;
 
-    atualizarApostas(aposta, tipoResultado, valorAposta);
+        // Atualiza a estrutura da aposta
+        ApostaInfo memory novaApostaInfo = ApostaInfo({
+            tipoAposta: tipoResultado,
+            valor: valorAposta
+        });
+
+        aposta.apostas[msg.sender] = novaApostaInfo;
+        aposta.tipoParaApostadores[tipoResultado].push(msg.sender);
+
+        atualizarApostas(aposta, tipoResultado, valorAposta);
+
+        emit ApostaRealizada(msg.sender, apostaIndex, tipoResultado, valorAposta);//novo
     }
 
 
@@ -139,7 +157,7 @@ contract evento {
     }
 
     // Função para sacar fundos
-    function sacar(uint256 valor) public {
+    function sacar(uint256 valor) public nonReentrant {
         require(carteiras[msg.sender] >= valor, "Saldo insuficiente");
         carteiras[msg.sender] -= valor;
         payable(msg.sender).transfer(valor);
@@ -170,6 +188,7 @@ contract evento {
 
 
     function resultado(uint apostaIndex) public {
+        b=b+1;
         emit ResultadoChamado(apostaIndex, block.timestamp);
         require(apostaIndex < listaDeApostas.length, "Aposta nao encontrada");
         Aposta storage aposta = listaDeApostas[apostaIndex];
@@ -189,27 +208,7 @@ contract evento {
 
     }
 
-    // function distribuirPremios(uint apostaIndex,Aposta storage aposta, string memory resultadoVencedor) internal {
-    //     address[] memory vencedores = aposta.tipoParaApostadores[resultadoVencedor];
-    //     uint256 totalVencedores = 0;
-
-
-
-
-    //     for (uint256 i = 0; i < vencedores.length; i++) {
-    //         totalVencedores += aposta.apostas[vencedores[i]].valor;
-    //     }
-
-    //     require(totalVencedores > 0, "Nao ha vencedores com apostas");
-
-    //     for (uint256 i = 0; i < vencedores.length; i++) {
-    //         uint256 premio = (aposta.apostas[vencedores[i]].valor * aposta.totalApostadoGeral) / totalVencedores;
-    //         payable(vencedores[i]).transfer(premio);
-    //     }
-
-    //     emit Resultado(apostaIndex,resultadoVencedor,vencedores,aposta.descricao);
-
-    // }
+  
 
 
     function distribuirPremios(uint apostaIndex, Aposta storage aposta, string memory resultadoVencedor) internal {

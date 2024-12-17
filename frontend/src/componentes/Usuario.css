@@ -1,0 +1,129 @@
+/* Reset e Fonte */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Ajuste para o Modal */
+.modal-content {
+  width: 600px; /* Largura do retângulo */
+  max-width: 100%; /* Limita a largura para telas menores */
+  height: auto; /* Ajusta a altura dinamicamente */
+  padding: 20px;
+  background-color: #f8f8f8; /* Fundo do modal */
+  border-radius: 10px; /* Bordas arredondadas */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  margin: auto; /* Centraliza o modal */
+}
+
+/* Caixa principal adaptada ao modal */
+.account-box {
+  width: 100%; /* Ocupa toda a largura do modal */
+  height: auto; /* Altura ajustável */
+  background-color: #f8f8f8;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  box-sizing: border-box;
+  box-shadow: none; /* Remove a sombra duplicada */
+  border-radius: 10px;
+}
+
+/* Saldo */
+.balance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.balance h1 {
+  font-size: 1.5rem; /* Ajuste para o modal */
+  margin: 0;
+  padding: 10px 15px;
+  display: inline-block;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  color: #333;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.balance p {
+  color: #666;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Ações */
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.action-item {
+  flex: 1;
+  background-color: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  transition: background 0.3s;
+  text-align: center;
+  margin: 0 5px;
+}
+
+.action-item:hover {
+  background-color: #e5e5e5;
+}
+
+/* Seção de transações */
+.transactions {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  flex: 1; /* Ocupa o espaço disponível */
+  overflow-y: auto; /* Adiciona rolagem vertical */
+}
+
+.transactions h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #333;
+  text-align: center;
+}
+
+.transactions ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.transactions li {
+  font-size: 0.9rem;
+  color: #555;
+  padding: 5px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.transactions li:last-child {
+  border-bottom: none;
+}

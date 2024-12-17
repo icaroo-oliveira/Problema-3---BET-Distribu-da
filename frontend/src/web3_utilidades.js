@@ -6,14 +6,20 @@ import Web3 from 'web3';
 const NETWORK = "http://127.0.0.1:8545";  // Endereço da rede (Ganache no caso)
 const ENDERECO = "0x5FbDB2315678afecb367f032d93F642f64180aa3";  // Endereço do contrato
 
-// Função para conectar à rede
+// Variável para armazenar a instância de Web3
+let web3Instance = null;
+
+// Função para conectar à rede (com Singleton)
 export async function connectToNetwork() {
+  if (web3Instance) {
+    return web3Instance; // Retorna a instância existente
+  }
+
   const provider = new Web3.providers.HttpProvider(NETWORK);
-  
-  // Inicializa a instância do Web3
-  const web3 = new Web3(provider);
-  return web3;
+  web3Instance = new Web3(provider);  // Cria e armazena a instância
+  return web3Instance;
 }
+
 
 // Função para carregar o contrato
 export async function loadContract(web3, address,b) {

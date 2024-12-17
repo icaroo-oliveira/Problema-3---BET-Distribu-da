@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState,useEffect,useContext } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import AccountMenu from "./AccountMenu.js";
@@ -6,6 +6,7 @@ import Balance from "./Balance.js";
 import Actions from "./Actions.js";
 import { ethers } from "ethers";
 import "./Usuario.css";
+import { UserContext } from '../UserContext.js';
 const { connectToNetwork, loadContract } = require('../web3_utilidades');  // Importa as funções
 
 function Usuario() {
@@ -16,7 +17,7 @@ function Usuario() {
   const [balance_wallet, setBalance_w] = useState(null); // Saldo inicial
   const [showModal, setShowModal] = useState(false); // Controle do modal
 
-
+  const { setUserAccount } = useContext(UserContext);
 
 
   // Função para carregar as contas do Hardhat
@@ -185,10 +186,11 @@ const handleSaque = async () => {
     useEffect(() => {
     if (selectedAccount) {
       localStorage.setItem("selectedAccount", selectedAccount);
+      setUserAccount(selectedAccount);
     }
   }, [selectedAccount]);
 
-
+  
   
   useEffect(() => {
     const savedAccount = localStorage.getItem("selectedAccount");

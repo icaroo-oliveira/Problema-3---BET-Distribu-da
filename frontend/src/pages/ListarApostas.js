@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useContext } from 'react';
 import '../styles/ListarApostas.css';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -6,6 +6,7 @@ import ApostaModal from './modal.js';
 import Usuario from '../componentes/Usuario.js';
 import { FaUserCircle } from 'react-icons/fa';
 import Eventcar from './CartaoEvento.js';
+import { UserContext } from '../UserContext';
 const { connectToNetwork, loadContract } = require('../web3_utilidades.js');  // Importa as funções
 
 
@@ -20,6 +21,8 @@ function ListarApostas() {
   const [endereco, setEndereco] = useState('');
 
 
+
+  const { userAccount } = useContext(UserContext);
   // Sempre tenta dar fetch nos eventos atuais (eventos que estão abertos)
   useEffect(() => {
     async function fetchApostas() {
@@ -55,7 +58,7 @@ function ListarApostas() {
   }, []);  // O efeito é executado uma vez quando o componente for montado
   
   const handleCreateAposta = () => {
-    const novaAposta = { descricao, valorAposta, endereco };
+    const novaAposta = { descricao, valorAposta, userAccount };
     console.log('Nova aposta:', novaAposta);
     alert('Nova aposta criada!');
     setShowCreateModal(false);
@@ -104,7 +107,7 @@ function ListarApostas() {
         </div>
       )}
 
-      {/* Modal para criar nova aposta */}
+      {/* Modal para criar nova aposta
       <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Criar Nova Aposta</Modal.Title>
@@ -145,7 +148,7 @@ function ListarApostas() {
             Criar Aposta
           </Button>
         </Modal.Footer>
-      </Modal>
+      </Modal> */}
 
 
 

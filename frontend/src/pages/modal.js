@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { UserContext } from '../UserContext';
+
 const { connectToNetwork, loadContract } = require('../web3_utilidades.js');  // Importa as funções
 
 function ApostaModal({ apost }) {
   const [show, setShow] = useState(false);
+
+
+  const { userAccount } = useContext(UserContext);
 
   // Adicionando states para os campos de texto
   const [valorAposta, setValorAposta] = useState('');
@@ -29,7 +34,7 @@ function ApostaModal({ apost }) {
   const handleResultado = async () => {
     const resultadoData = {
       index: apost.id,  // Índice da aposta
-      conta: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65", // Endereço da conta
+      conta: userAccount, // Endereço da conta
     };
   
     try {
@@ -69,7 +74,7 @@ function ApostaModal({ apost }) {
     const valorApostaEther = valorAposta;  // Supondo que valorAposta esteja em Ether
     const apostaIndex = apost.id;  // Índice da aposta
     const apostaDescricao = aposta;  // Descrição da aposta
-    const contaOrigem = conta;  // Endereço da conta que faz a aposta
+    const contaOrigem = userAccount;  // Endereço da conta que faz a aposta
   
     try {
       // Conecta à rede Ethereum e carrega o contrato
@@ -103,7 +108,7 @@ function ApostaModal({ apost }) {
     <>
 
       <Button variant="primary" onClick={handleShow} className="me-2">
-        Ver Detalhes
+        Ver Detalhes/Apostar
       </Button>
 
       <Button variant="primary" onClick={handleResultado}>
@@ -134,18 +139,7 @@ function ApostaModal({ apost }) {
             />
           </div>
 
-          {/* Campo para endereço da conta */}
-          <div>
-            <label htmlFor="conta">Endereço:</label>
-            <textarea
-              id="conta"
-              name="conta"
-              value={conta}
-              onChange={handleChange}
-              placeholder="Endereço da conta"
-            />
-          </div>
-
+      
           {/* Campo para aposta de aposta */}
           <div>
             <label htmlFor="aposta">aposta:</label>

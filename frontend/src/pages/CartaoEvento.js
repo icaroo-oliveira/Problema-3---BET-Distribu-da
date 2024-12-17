@@ -1,7 +1,8 @@
 // Novo componente para o card de eventos
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect,useContext } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { UserContext } from '../UserContext';
 
 const { connectToNetwork, loadContract } = require('../web3_utilidades');  // Importa as funções
 function Eventcar({ onCreateEvent }) {
@@ -12,13 +13,16 @@ function Eventcar({ onCreateEvent }) {
   const [eventEndereco, setEventEndereco] = useState('');
 
 
+  const { userAccount } = useContext(UserContext);
+
+
   const handleClose = () => setShowCreateModal(false);
 
 
   // Criando eventos, usa web3 para enviar o nome do envento, o endereco da conta e a data de temrino desse evento
   const handleCreateEvent = async () => {
     // Aqui você pode usar os dados a serem enviados
-      const newEvent = { descricao: eventName, conta: eventEndereco, dato: eventDate };
+      const newEvent = { descricao: eventName, conta: userAccount, dato: eventDate };
 
       console.log('Descrição:', newEvent.descricao);
       console.log('Data:', newEvent.dato);
@@ -89,7 +93,7 @@ function Eventcar({ onCreateEvent }) {
               onChange={(e) => setEventDate(e.target.value)}
             />
           </div>
-          <div>
+          {/* <div>
             <label>Endereco:</label>
             <input
               type="text"
@@ -97,7 +101,7 @@ function Eventcar({ onCreateEvent }) {
               onChange={(e) => setEventEndereco(e.target.value)}
               placeholder="Endereco"
             />
-          </div>
+          </div> */}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowCreateModal(false)}>

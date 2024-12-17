@@ -1,0 +1,134 @@
+Definindo o fundo geral e o padding da página
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Container principal */
+.container {
+  width: 80%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  
+}
+
+/* Título */
+.titulo {
+  text-align: center;
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Estilos para quando as apostas estão carregando */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.loading-text {
+  font-size: 1.5rem;
+  color: #007BFF;
+}
+
+/* Cards de apostas */
+.apostas-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;  /* Mantém o espaçamento entre os cards */
+  justify-content: flex-start;  /* Alinha todos os cards à esquerda, sem espaçamento extra */
+}
+
+.aposta-card {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  width: 32%;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  word-wrap: break-word;  /* Quebra palavras longas que não cabem */
+  overflow-wrap: break-word;  /* Garantir que o texto que não cabe seja quebrado */
+  word-break: break-all; /* Quebra palavras que são longas demais */
+}
+
+.aposta-card:hover {
+  transform: translateY(-10px);
+}
+
+/* Estilo do título da aposta */
+.aposta-descricao {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Estilo para quando não há apostas */
+.no-apostas {
+  text-align: center;
+  color: #777;
+  font-size: 1.2rem;
+}
+
+/* Botões e interações */
+button {
+  background-color: #007BFF;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+
+/* Estilo para o card de criação */
+.create-card {
+  background-color: #f8f9fa;
+  border: 2px dashed #007bff;
+  padding: 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 18px;
+}
+
+.create-card:hover {
+  background-color: #e2e6ea;
+}
+
+
+/* Estilização do ícone de conta no canto superior direito */
+.user-icon {
+  position: fixed;
+  top: 10px;
+  right: 20px;
+  z-index: 1000;
+  cursor: pointer;
+  color: #555; /* Cor inicial */
+  transition: color 0.3s ease;
+}
+
+.user-icon:hover {
+  color: #007bff; /* Cor ao passar o mouse */
+}
+
+
+
+

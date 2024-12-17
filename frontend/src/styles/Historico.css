@@ -1,0 +1,126 @@
+/* Definindo o fundo geral e o padding da página */
+.lista-apostas-simples-body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Container principal */
+.lista-apostas-simples-container {
+  width: 80%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Título */
+.lista-apostas-simples-titulo {
+  text-align: center;
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Estilos para quando as apostas estão carregando */
+.lista-apostas-simples-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.lista-apostas-simples-loading-text {
+  font-size: 1.5rem;
+  color: #007BFF;
+}
+
+/* Cards de apostas */
+.lista-apostas-simples-apostas-container {
+  display: flex;
+  flex-direction: column;  /* Empilha as apostas verticalmente */
+  gap: 16px;  /* Mantém o espaçamento entre os cards */
+}
+
+.lista-apostas-simples-aposta-card {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  width: 100%;  /* Faz com que os cards ocupem toda a largura disponível */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  word-wrap: break-word;  /* Quebra palavras longas que não cabem */
+  overflow-wrap: break-word;  /* Garantir que o texto que não cabe seja quebrado */
+  word-break: break-all; /* Quebra palavras que são longas demais */
+}
+
+.lista-apostas-simples-aposta-card:hover {
+  transform: translateY(-10px);
+}
+
+/* Estilo do título da aposta */
+.lista-apostas-simples-aposta-descricao {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Estilo para quando não há apostas */
+.lista-apostas-simples-no-apostas {
+  text-align: center;
+  color: #777;
+  font-size: 1.2rem;
+}
+
+/* Botões e interações */
+.lista-apostas-simples-button {
+  background-color: #007BFF;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.lista-apostas-simples-button:hover {
+  background-color: #0056b3;
+}
+
+/* Estilo para o card de criação */
+.lista-apostas-simples-create-card {
+  background-color: #f8f9fa;
+  border: 2px dashed #007bff;
+  padding: 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 18px;
+}
+
+.lista-apostas-simples-create-card:hover {
+  background-color: #e2e6ea;
+}
+
+/* Estilização do ícone de conta no canto superior direito */
+.lista-apostas-simples-user-icon {
+  position: fixed;
+  top: 10px;
+  right: 20px;
+  z-index: 1000;
+  cursor: pointer;
+  color: #555; /* Cor inicial */
+  transition: color 0.3s ease;
+}
+
+.lista-apostas-simples-user-icon:hover {
+  color: #007bff; /* Cor ao passar o mouse */
+}

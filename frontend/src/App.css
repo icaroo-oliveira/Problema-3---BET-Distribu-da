@@ -1,0 +1,107 @@
+/* Botão do menu */
+.menu-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.3s;
+  z-index: 1000;
+}
+
+.menu-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Conteúdo da sidebar */
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sidebar-header h3 {
+  color: white;
+  margin: 0;
+}
+
+.close-btn {
+  background-color: transparent;
+  color: white;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: #e74c3c;
+}
+
+.sidebar-content ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sidebar-content li {
+  margin: 10px 0;
+}
+
+.sidebar-content a {
+  text-decoration: none;
+  color: #ecf0f1;
+  font-size: 16px;
+}
+
+.sidebar-content a:hover {
+  color: #3498db;
+}
+
+
+/* App.css */
+
+/* Estiliza a página inicial */
+.homepage-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  background: linear-gradient(135deg, #9fb0c1, #467bb4);
+  color: white;
+  padding: 20px;
+}
+
+.homepage-title {
+  font-size: 4rem;
+  font-weight: bold;
+  margin: 0;
+  color: #e5e5e5;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.homepage-subtitle {
+  font-size: 1.5rem;
+  margin-top: 20px;
+  color: #ecf0f1;
+  max-width: 600px;
+  line-height: 1.6;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}

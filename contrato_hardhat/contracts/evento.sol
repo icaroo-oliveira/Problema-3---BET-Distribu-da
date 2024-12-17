@@ -131,9 +131,9 @@ contract evento is ReentrancyGuard {
     //multiplas pessoas apostados no mesmo evento ao mesmo tempo poderia fazer com que dados se sobrepossem 
     function apostar(uint eventoIndex, string memory tipoResultado, uint256 valorAposta) public nonReentrantEvento(eventoIndex){
         require(eventoIndex < listaDeEventos.length, "Aposta nao encontrada");
-        Eventos_e storage evento = listaDeEventos[eventoIndex];
+        Eventos_e storage eventO = listaDeEventos[eventoIndex];
 
-        require(!evento.apostaFechada, "Aposta ja fechada");
+        require(!eventO.apostaFechada, "Aposta ja fechada");
 
         // require(
         //     block.timestamp <= aposta.unlockTime,  //a partir de momento x nao pode mais apostar
@@ -141,7 +141,7 @@ contract evento is ReentrancyGuard {
         // );
 
         require(valorAposta > 0, "Valor da aposta deve ser maior que zero");
-        require(bytes(evento.apostas[msg.sender].tipoAposta).length == 0, "Ja realizou uma aposta");
+        require(bytes(eventO.apostas[msg.sender].tipoAposta).length == 0, "Ja realizou uma aposta");
 
         // Verifica se o usuário tem saldo suficiente na carteira
         require(carteiras[msg.sender] >= valorAposta, "Saldo insuficiente na carteira");
@@ -156,10 +156,10 @@ contract evento is ReentrancyGuard {
             valor: valorAposta
         });
 
-        evento.apostas[msg.sender] = novaApostaInfo;
-        evento.tipoParaApostadores[tipoResultado].push(msg.sender);
-        evento.qntd_apostadores++;
-        atualizarApostas(evento, tipoResultado, valorAposta);
+        eventO.apostas[msg.sender] = novaApostaInfo;
+        eventO.tipoParaApostadores[tipoResultado].push(msg.sender);
+        eventO.qntd_apostadores++;
+        atualizarApostas(eventO, tipoResultado, valorAposta);
 
         emit ApostaRealizada(msg.sender, eventoIndex, tipoResultado, valorAposta);//novo
     }
@@ -179,9 +179,9 @@ contract evento is ReentrancyGuard {
     }
 
 
-    function atualizarApostas(Eventos_e storage evento, string memory tipoResultado, uint256 valor) internal {
-        evento.tipoAposta[tipoResultado] += valor;
-        evento.totalApostadoGeral += valor;
+    function atualizarApostas(Eventos_e storage eventO, string memory tipoResultado, uint256 valor) internal {
+        eventO.tipoAposta[tipoResultado] += valor;
+        eventO.totalApostadoGeral += valor;
     }
 
     
@@ -190,44 +190,44 @@ contract evento is ReentrancyGuard {
     //função para solicitar resultado, pode ser o dono da aposta se tiver no dia, ou qualquer pessoa depois de um dia do final
     function resultado(uint eventoIndex) public {
         require(eventoIndex < listaDeEventos.length, "Aposta nao encontrada");
-        Eventos_e storage evento = listaDeEventos[eventoIndex];
+        Eventos_e storage eventO = listaDeEventos[eventoIndex];
 
         // Verifica se o evento já foi fechado 
-        require(!evento.apostaFechada, "Evento ja fechado");
+        require(!eventO.apostaFechada, "Evento ja fechado");
 
         // Verifica se o timestamp atual passou do prazo máximo (1 dia após unlockTime), 
         // ou se a pessoa que chamou é o dono da aposta
-        uint256 prazoMaximo = evento.unlockTime + 1 days;
-        bool podeDistribuir = (block.timestamp >= prazoMaximo || msg.sender == evento.dono);
+        uint256 prazoMaximo = eventO.unlockTime + 1 days;
+        bool podeDistribuir = (block.timestamp >= prazoMaximo || msg.sender == eventO.dono);
         require(podeDistribuir, "Somente o dono ou qualquer pessoa apos 1 dia pode encerrar");
 
         // Verifica se o evento pode ser encerrado (precisa ter passado o unlockTime)
-        require(block.timestamp >= evento.unlockTime, "Evento ainda nao pode ser encerrado");
+        require(block.timestamp >= eventO.unlockTime, "Evento ainda nao pode ser encerrado");
 
         // Lógica do resultado
         string memory resultado_final = gerarResultado(eventoIndex);
 
         // Distribuição de prêmios
-        distribuirPremios(eventoIndex, evento, resultado_final);
+        distribuirPremios(eventoIndex, eventO, resultado_final);
 
         // Marca a aposta como fechada
-        evento.apostaFechada = true;
+        eventO.apostaFechada = true;
 }
 
 
 
     //Distribuindo os prêmios
-    function distribuirPremios(uint eventoIndex, Eventos_e storage evento, string memory resultadoVencedor) internal {
-        address[] memory vencedores = evento.tipoParaApostadores[resultadoVencedor];//vencedores 
+    function distribuirPremios(uint eventoIndex, Eventos_e storage eventO, string memory resultadoVencedor) internal {
+        address[] memory vencedores = eventO.tipoParaApostadores[resultadoVencedor];//vencedores 
         uint256 totalVencedores = 0;
-        uint256 totalApostadoGeral = evento.totalApostadoGeral;
+        uint256 totalApostadoGeral = eventO.totalApostadoGeral;
 
         uint256 totalverdadeiro = totalApostadoGeral;
 
 
         // Calcula o total apostado pelos vencedores
         for (uint256 i = 0; i < vencedores.length; i++) {
-        totalVencedores += evento.apostas[vencedores[i]].valor;
+        totalVencedores += eventO.apostas[vencedores[i]].valor;
         }
 
         // Calcula 7% do total apostado e envia para o dono do contrato
@@ -240,11 +240,11 @@ contract evento is ReentrancyGuard {
         if (totalVencedores > 0) {
              // Distribui o prêmio restante para os vencedores
             for (uint256 i = 0; i < vencedores.length; i++) {
-                uint256 premio = (evento.apostas[vencedores[i]].valor * totalApostadoGeral) / totalVencedores;
+                uint256 premio = (eventO.apostas[vencedores[i]].valor * totalApostadoGeral) / totalVencedores;
                 carteiras[vencedores[i]] += premio; // Adiciona o prêmio ao saldo do vencedor
             }
 
-            emit Resultado(eventoIndex, resultadoVencedor, vencedores, evento.descricao);//emite um evento de resultado do evento
+            emit Resultado(eventoIndex, resultadoVencedor, vencedores, eventO.descricao);//emite um evento de resultado do evento
 
         } else {//se não teve nenhum vencedor, vai devolver o valor para os apostadores(vai ser menos pq o dono do contrato recebeu 7%)
 
@@ -252,7 +252,7 @@ contract evento is ReentrancyGuard {
             bytes32 targetHash = keccak256(abi.encodePacked(resultadoVencedor));
 
             if (hashedString == targetHash) { // para o caso que os perdedores apostaram em ''coroa''
-                address[] memory pessoas = evento.tipoParaApostadores["coroa"];
+                address[] memory pessoas = eventO.tipoParaApostadores["coroa"];
                 uint256 totalPorcentagens = 0; // Para verificar a soma de todas as porcentagens
                 
                 
@@ -261,7 +261,7 @@ contract evento is ReentrancyGuard {
 
                 // Calcula as porcentagens do valor da aposta de cada apostador sobre o montante total
                 for (uint256 i = 0; i < pessoas.length; i++) {
-                    uint256 valorApostado = evento.apostas[pessoas[i]].valor;
+                    uint256 valorApostado = eventO.apostas[pessoas[i]].valor;
                     porcentagens[i] = (valorApostado * 100) / totalverdadeiro;
                     totalPorcentagens += porcentagens[i];
                 }
@@ -272,11 +272,11 @@ contract evento is ReentrancyGuard {
                     carteiras[pessoas[i]] += valorDistribuido; // Adiciona o valor ao saldo do apostador
                  }
 
-                emit Resultado(eventoIndex, "Sem vencedores, na lista reembolsados",pessoas, evento.descricao);
+                emit Resultado(eventoIndex, "Sem vencedores, na lista reembolsados",pessoas, eventO.descricao);
 
             }else{//mesma coisa agora o casos q todos mundo perdeu e era "cara"
 
-                address[] memory pessoas = evento.tipoParaApostadores["cara"];
+                address[] memory pessoas = eventO.tipoParaApostadores["cara"];
                 uint256 totalPorcentagens = 0; // Para verificar a soma de todas as porcentagens
                 
                 
@@ -285,7 +285,7 @@ contract evento is ReentrancyGuard {
 
                 // Calcula as porcentagens de cada apostador
                 for (uint256 i = 0; i < pessoas.length; i++) {
-                    uint256 valorApostado = evento.apostas[pessoas[i]].valor;
+                    uint256 valorApostado = eventO.apostas[pessoas[i]].valor;
                     porcentagens[i] = (valorApostado * 100) / totalverdadeiro;
                     totalPorcentagens += porcentagens[i];
                 }
@@ -296,7 +296,7 @@ contract evento is ReentrancyGuard {
                     carteiras[pessoas[i]] += valorDistribuido; // Adiciona o valor ao saldo do apostador
                 }
 
-                emit Resultado(eventoIndex, "Sem vencedores, na lista reembolsados",pessoas, evento.descricao);//emitindo evento
+                emit Resultado(eventoIndex, "Sem vencedores, na lista reembolsados",pessoas, eventO.descricao);//emitindo evento
 
                 
             }
@@ -313,8 +313,8 @@ contract evento is ReentrancyGuard {
 
     //funcao para gerar o resultado aleatoriamente, cara ou coroa?!
     function gerarResultado(uint eventoIndex) internal view     returns (string memory) {
-        Eventos_e storage evento = listaDeEventos[eventoIndex];
-        require(!evento.apostaFechada, "Resultado ja publicado");
+        Eventos_e storage eventO = listaDeEventos[eventoIndex];
+        require(!eventO.apostaFechada, "Resultado ja publicado");
 
         // Gera um número pseudo-aleatório usando o hash do bloco
         uint resultadoRandomico = uint(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, eventoIndex))) % 2;
@@ -345,8 +345,7 @@ contract evento is ReentrancyGuard {
         uint256 unlockTime;
         uint256 valor_apostado;
         string tipo;
-        uint256 oddsCara;
-        uint256 oddsCoroa;
+        bool status;
     }
 
 
@@ -361,24 +360,24 @@ contract evento is ReentrancyGuard {
 
         for (uint256 i = 0; i < listaDeEventos.length; i++) {
             if (!listaDeEventos[i].apostaFechada) {
-                Eventos_e storage evento = listaDeEventos[i];
+                Eventos_e storage eventO = listaDeEventos[i];
 
                 // Calcula as odds para "cara" e "coroa"
-                uint256 oddsCara = evento.tipoAposta["cara"] > 0
-                    ? (evento.totalApostadoGeral * 100) / evento.tipoAposta["cara"]
+                uint256 oddsCara = eventO.tipoAposta["cara"] > 0
+                    ? (eventO.totalApostadoGeral * 100) / eventO.tipoAposta["cara"]
                     : 0;
 
-                uint256 oddsCoroa = evento.tipoAposta["coroa"] > 0
-                    ? (evento.totalApostadoGeral * 100) / evento.tipoAposta["coroa"]
+                uint256 oddsCoroa = eventO.tipoAposta["coroa"] > 0
+                    ? (eventO.totalApostadoGeral * 100) / eventO.tipoAposta["coroa"]
                     : 0;
 
                 // Adiciona a aposta à lista simplificada
                 eventosAbertosTemp[count] = EventoSimplificado({
-                    id: evento.id,
-                    descricao: evento.descricao,
-                    dono: evento.dono,
-                    unlockTime: evento.unlockTime,
-                    totalApostadoGeral: evento.totalApostadoGeral,
+                    id: eventO.id,
+                    descricao: eventO.descricao,
+                    dono: eventO.dono,
+                    unlockTime: eventO.unlockTime,
+                    totalApostadoGeral: eventO.totalApostadoGeral,
                     oddsCara: oddsCara,
                     oddsCoroa: oddsCoroa
                 });
@@ -408,27 +407,26 @@ contract evento is ReentrancyGuard {
 
         for (uint256 i = 0; i < count; i++) {
             uint256 eventoIndex = minhasApostasIndices[i];
-            Eventos_e storage evento = listaDeEventos[eventoIndex];
+            Eventos_e storage eventO = listaDeEventos[eventoIndex];
 
             // Calcula as odds para "cara" e "coroa"
-            uint256 oddsCara = evento.tipoAposta["cara"] > 0
-                ? (evento.totalApostadoGeral * 100) / evento.tipoAposta["cara"]
-                : 0;
+            // uint256 oddsCara = evento.tipoAposta["cara"] > 0
+            //     ? (evento.totalApostadoGeral * 100) / evento.tipoAposta["cara"]
+            //     : 0;
 
-            uint256 oddsCoroa = evento.tipoAposta["coroa"] > 0
-                ? (evento.totalApostadoGeral * 100) / evento.tipoAposta["coroa"]
-                : 0;
+            // uint256 oddsCoroa = evento.tipoAposta["coroa"] > 0
+            //     ? (evento.totalApostadoGeral * 100) / evento.tipoAposta["coroa"]
+            //     : 0;
 
             // Adiciona os dados ao array simplificado
             minhasApostas[i] = Eventoenvia({
-                id: evento.id,
-                descricao: evento.descricao,
-                dono: evento.dono,
-                unlockTime: evento.unlockTime,
-                valor_apostado: evento.apostas[enderecoApostador].valor,
-                tipo:evento.apostas[enderecoApostador].tipoAposta,
-                oddsCara: oddsCara,
-                oddsCoroa: oddsCoroa
+                id: eventO.id,
+                descricao: eventO.descricao,
+                dono: eventO.dono,
+                unlockTime: eventO.unlockTime,
+                valor_apostado: eventO.apostas[msg.sender].valor,
+                tipo:eventO.apostas[msg.sender].tipoAposta,
+                status: eventO.apostaFechada
             });
         }
 
